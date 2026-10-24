@@ -29,7 +29,7 @@ These later capabilities are visible in source and tests, but the original Kiro 
 
 ## Verification evidence
 
-Historical counts in the original report are retained as historical claims, not newly rerun results. The merged snapshot's [frontend QA record](qa/frontend.md) reports 261 backend tests passed and one real-detector integration test skipped, 55 frontend unit tests passed, TypeScript/build success, 13 HTTP checks, and browser workflow checks on a synthetic route. These are software results for the recorded environment; this documentation PR did not rerun them. The root [README](README.md) records local webcam/YOLO measurements and distinguishes them from hosted and physical acceptance.
+Historical counts in the original report are historical claims, not newly rerun results. The root [testing and measurement summary](README.md#testing-and-measured-results) records backend/frontend software checks and local webcam/YOLO measurements, and distinguishes them from hosted and physical acceptance. Source tests remain available under [frontend/tests/](frontend/tests/) and [backend_phase3/tests/](backend_phase3/tests/). This documentation update did not rerun those tests.
 
 For direct inspection, reviewers can read the [original Kiro account](https://github.com/adhyannsingal/stride/blob/3e71e21990d2341d937f09192085fbc2144fb786/Kiro_Usage.md), the [historical .kiro commit](https://github.com/adhyannsingal/stride/commit/45e8c095b8679b2feb4529d4bd17f60e4380af93), [PR #2](https://github.com/adhyannsingal/stride/pull/2), the source folders above, and [QA evidence](qa/). A teammate should provide actual Kiro session links or screenshots if available; none are manufactured here.
 

@@ -295,7 +295,7 @@ These results describe specific software runs and local measurements, not a clin
 
 The latest recorded **60-second local webcam → HTTP backend → YOLO** run returned **10.85 unique results/second**, with **56 ms p95 capture-to-completion** and **zero HTTP errors**. It used a trusted shared OS clock and local CPU inference. These figures are not W11, hosted, or camera-to-AirPods latency measurements, and they do not measure detection accuracy. An earlier run returned 6.58 results/second with 193 ms p95, illustrating configuration/environment dependence.
 
-Evidence: [latest webcam measurement](qa/current-webcam-http.json), [earlier measurement](qa/phase2-webcam-http.json), [frontend QA](qa/frontend.md), [simulated obstacle trace](qa/phase4-obstacle-cycle.json), [firmware compile record](qa/phase4-firmware-compile.txt), and [quality evaluation workflow](qa/quality/README.md). Human-reviewed held-out detection accuracy remains unmeasured.
+Evidence: [latest webcam measurement](qa/current-webcam-http.json), [earlier measurement](qa/phase2-webcam-http.json), [simulated obstacle trace](qa/phase4-obstacle-cycle.json), [firmware compile record](qa/phase4-firmware-compile.txt), and [quality evaluation workflow](qa/quality/README.md). Human-reviewed held-out detection accuracy remains unmeasured.
 
 Reproduce component checks from the repository root:
 
@@ -306,7 +306,7 @@ PYTHONPATH=.:backend_phase3 .venv-phase3/bin/python scripts/simulate_obstacle_cy
 (cd frontend && npx pnpm@10.34.3 test && npx pnpm@10.34.3 run typecheck && npx pnpm@10.34.3 run build)
 ```
 
-Real-model fixture tests need the generated model and an explicitly supplied image. To enable the backend's real detector check, set `STRIDE_INTEGRATION_DETECTOR_FACTORY=app.vision.phase2:build_detector` and `STRIDE_INTEGRATION_JPEG=/absolute/path/to/test.jpg`. Missing optional fixtures cause skips, not evidence of model execution. Browser acceptance setup is documented in [frontend QA](qa/frontend.md).
+Real-model fixture tests need the generated model and an explicitly supplied image. To enable the backend's real detector check, set `STRIDE_INTEGRATION_DETECTOR_FACTORY=app.vision.phase2:build_detector` and `STRIDE_INTEGRATION_JPEG=/absolute/path/to/test.jpg`. Missing optional fixtures cause skips, not evidence of model execution. The [browser acceptance runner](frontend/tests/run_acceptance.py) exercises the real backend using temporary data and synthetic routes; it requires a prepared backend environment, frontend dependencies and Playwright.
 
 ## Security, privacy, and deployment
 
