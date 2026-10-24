@@ -35,7 +35,7 @@ Do not narrate every object on every frame. Match stable detections across frame
 
 ## Detector and deployment
 
-Agent 1 selects one small pretrained YOLO detector and pins checkpoint/runtime/input size/class list. Prove it locally on live webcam images immediately. For cloud deployment, prefer an exported ONNX model with ONNX Runtime CPU if it meets the measured throughput/memory gate; keep heavyweight conversion/training packages off the serving path. Use the model's exact preprocessing, output decoder and NMS behavior, not a guessed tensor layout. Compare exported and original outputs on a few test images before deployment.
+Agent 3 selects one small pretrained YOLO detector and pins checkpoint/runtime/input size/class list. Prove it locally on live webcam images immediately. For cloud deployment, prefer an exported ONNX model with ONNX Runtime CPU if it meets the measured throughput/memory gate; keep heavyweight conversion/training packages off the serving path. Use the model's exact preprocessing, output decoder and NMS behavior, not a guessed tensor layout. Compare exported and original outputs on a few test images before deployment.
 
 The deployed process must fit the chosen host's actual memory/CPU allocation. Model download/load, sustained rate and thermal/network behavior are tested, not inferred from model marketing. No new paid resource without team authorization. If hosted performance fails the live gate, record the failure and reduce input/model overhead within a short timebox. A snapshot-only fallback can be demonstrated as such, but **does not satisfy this core requirement**.
 
@@ -52,13 +52,13 @@ Keep existing endpoints for routes, memory, devices and optional Gemini question
 
 Live detector observations may feed sightings with capture timestamp and last-confirmed checkpoint association. The existing 5-second freshness policy applies only to requested Gemini snapshots; the stricter live policy above controls automatic visual announcements. Distinguish provider `yolo` from `gemini` and fixtures.
 
-## Updated three-person priorities
+## Current three-person ownership
 
-1. **Person/Agent 1:** hosted live detector, model/runtime/export validation, latest-frame worker, live APIs/metrics, memory and optional Gemini. Prove continuous results before polishing cloud descriptions.
-2. **Person/Agent 2:** deploy a host that passes the measured live gate, prepare W11 sustained upload and timestamps, test packet loss/backlog, independent sensor/feedback firmware. At final assembly measure actual W11-to-announcement performance.
-3. **Person/Agent 3 — software only:** automatic phone/webcam capture, live overlays/results/health, speech stabilization, route UI and live Start/Pause/Stop. No repeated Analyze-button dependency.
+1. **Agent 1 — backend:** FastAPI/shared contracts/auth, frame ingestion, routes/memory, all device server policies/commands/ACKs, app assembly and HTTPS deployment.
+2. **Agent 2 — frontend:** browser/webcam capture and upload, accessible phone UI, overlays, route controls and AirPods speech playback. Software only.
+3. **Agent 3 — Adhyann:** model/runtime/export, latest-frame inference/tracking/router, W11 and DevKit firmware, simulation client, physical hardware and measured integration. No duplicate frontend/backend.
 
-Keep hours 4.5–5.5 for physical assembly and the following hour for video/submission. Drop optional GPS import, rich dashboards, voice input and Gemini extras before dropping live perception. The live detector work replaces the earlier cloud-snapshot implementation priority; it is not an additional P1 piled on top.
+Read `Agent_1_Backend.md`, `Agent_2_Frontend.md`, `Agent_3_Hardware_Vision.md` and `contracts/API.md`. Agent 1 is the sole writer of shared schemas/settings/dependencies/app entrypoint. Agent 3 supplies the mounted vision service; Agent 2 consumes the shared API. The integration gates and merge order live in Agent 3's brief. Use actual remaining time; reserve the final build hour for staged hardware integration and the separate submission hour for recording.
 
 ## Required extra tests
 

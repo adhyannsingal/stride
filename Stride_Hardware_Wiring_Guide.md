@@ -4,7 +4,7 @@
 
 **Confirmed equipment:** MacBook Air M4, standard iPhone 14, AirPods Pro 3 and a simple 3 V vibration motor. Verify actual component availability at sprint kickoff; earlier delivery estimates are not proof the parts are on hand.
 
-Use the six-hour `buildspec_stride.md` for schedule, software ownership and hosted runtime. This guide controls electrical connections and supersedes the earlier 5 V vibration-motor suggestion. **Your motor is rated 3 V.** Use the sensor board's GPIO labels, not physical header positions; DevKit clones vary. The W11 camera pin map remains unverified.
+Use the three current agent briefs for ownership and integration; `buildspec_stride.md` is the team index. This guide controls electrical connections and supersedes the earlier 5 V vibration-motor suggestion. **Your motor is rated 3 V.** Use the sensor board's GPIO labels, not physical header positions; DevKit clones vary. The W11 camera pin map remains unverified.
 
 ## 1. What goes where
 
@@ -137,7 +137,7 @@ These are initial patterns to test with users, not a validated vocabulary. A sin
 
 ## 7. W11 camera wiring gate
 
-No external sensor/motor GPIOs are needed on the W11. Power via its verified USB input and keep the supplied camera ribbon installed correctly. Before flashing, Person 1 must record:
+No external sensor/motor GPIOs are needed on the W11. Power via its verified USB input and keep the supplied camera ribbon installed correctly. Before flashing, Agent 3 / Adhyann must record:
 
 | Item | Required verification |
 | --- | --- |
@@ -150,12 +150,12 @@ No external sensor/motor GPIOs are needed on the W11. Power via its verified USB
 
 ## 8. Integration sequence and owners
 
-1. **Person 1:** W11 identification, USB power and camera-only example.
-2. **Person 2:** DevKit rails, divider and sensor-only ranging; no motors yet.
-3. **Person 2:** buzzer driver, then one motor, then second motor. Check rails after each addition.
-4. **Persons 1/2:** common enclosure, harness and mounting; inspect all wiring unpowered.
-5. **Person 3, software only:** substitute real frame/telemetry adapters for mocks and send expiring direction commands.
-6. **Person 2:** verify alert timing is nonblocking, old commands cannot replay and motors go off on link loss. Local obstacle alerts remain active without the backend.
+1. **Agent 3 / Adhyann:** W11 identification, USB power and camera-only example.
+2. **Agent 3 / Adhyann:** DevKit rails, divider and sensor-only ranging; no motors yet.
+3. **Agent 3 / Adhyann:** buzzer driver, then one motor, then second motor. Check rails after each addition.
+4. **Agent 3 / Adhyann:** common enclosure, harness and mounting; inspect all wiring unpowered.
+5. **Agent 1 (backend) + Agent 2 (frontend):** bind real devices, select W11 and verify telemetry/command/ACK/speech while Agent 3 handles hardware.
+6. **Agent 3 / Adhyann:** verify alert timing is nonblocking, old commands cannot replay and remote direction cues cancel on link loss. Local obstacle buzzer/motor alerts remain active without the backend.
 7. **All:** 15-minute powered run, disconnect/reconnect tests, 10 approaches to staged flat targets and direction-pattern checks. No unsupervised navigation trials.
 
 ## 9. AirPods connections
