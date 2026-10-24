@@ -11,6 +11,7 @@ from pathlib import Path
 import cv2
 import httpx
 import numpy as np
+from app.vision.capture import encode_capture
 
 
 async def run(a):
@@ -48,15 +49,13 @@ async def run(a):
                 ok, image = await asyncio.to_thread(cap.read)
                 if not ok:
                     raise RuntimeError('Camera read failed')
-                ok, jpeg = cv2.imencode('.jpg',cv2.resize(image,(640,480)))
-                if not ok:
-                    raise RuntimeError('JPEG encode failed')
+                jpeg, _, _ = encode_capture(image)
                 uploads += 1
                 headers = {'Content-Type':'image/jpeg','X-Session-Id':a.session_id,
                            'X-Device-Id':a.device_id,'X-Boot-Id':boot,'X-Frame-Id':str(uuid4()),
                            'X-Sequence':str(uploads),'X-Captured-Ms':str(capture_ms),'X-Clock-Synced':'true','X-Source-Revision':str(state['source_revision'])}
                 try:
-                    reply = await client.post('/frame',content=jpeg.tobytes(),headers=headers)
+                    reply = await client.post('/frame',content=jpeg,headers=headers)
                     reply.raise_for_status()
                     reply = await client.get('/vision/latest',params={'session_id':a.session_id})
                     reply.raise_for_status()

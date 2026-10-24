@@ -61,3 +61,11 @@ ESP32 core 3.3.2. See feedback-selftest-compile.txt. Native tests prove one 100 
 pulse after 2 s, no repeat and no late replay. Sensor-only logs at 10 Hz while
 keeping output drivers OFF; all bench modes disable networking. These checks
 require no backend. Actual component measurements/USB flashing remain NOT RUN.
+
+## Latest webcam/fault follow-up
+
+See [webcam-tuning.md](webcam-tuning.md) for the newer visible-scene 60-second run,
+profiling, reproduced source-worker buildup/fix, 22 passing Python tests and all
+seven measured local camera/model fault cases. Initial dark-input measurements
+are explicitly distinguished from scene recognition. Hosted/network/phone and
+physical hardware release gates above remain unverified.

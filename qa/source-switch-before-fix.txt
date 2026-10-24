@@ -1,0 +1,62 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+_______ test_repeated_source_switches_keep_one_session_inference_worker ________
+
+    def test_repeated_source_switches_keep_one_session_inference_worker():
+        async def run():
+            started,release=threading.Event(),threading.Event()
+            def slow(_):
+                started.set(); assert release.wait(3)
+                return [Detection('chair',.9,(.1,.1,.4,.5))]
+            s,_=setup(slow)
+            s.offer_frame(frame())
+            assert await asyncio.to_thread(started.wait,3)
+            try:
+                for revision in range(2,52):
+                    s.bind('session',revision,'fixture','fixture')
+                    s.control('session','start',revision)
+                    s.offer_frame(frame(revision=revision,sequence=revision))
+                    await asyncio.sleep(0)
+                live_workers=sum(not task.done() for task in s.workers)
+                assert live_workers<=1, f'{live_workers} retired inference workers accumulated'
+            finally:
+                release.set()
+                await s.close()
+>       asyncio.run(run())
+
+tests/vision/test_service.py:191:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+../../.local/share/uv/python/cpython-3.11.16-macos-aarch64-none/lib/python3.11/asyncio/runners.py:190: in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+../../.local/share/uv/python/cpython-3.11.16-macos-aarch64-none/lib/python3.11/asyncio/runners.py:118: in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../.local/share/uv/python/cpython-3.11.16-macos-aarch64-none/lib/python3.11/asyncio/base_events.py:654: in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+    async def run():
+        started,release=threading.Event(),threading.Event()
+        def slow(_):
+            started.set(); assert release.wait(3)
+            return [Detection('chair',.9,(.1,.1,.4,.5))]
+        s,_=setup(slow)
+        s.offer_frame(frame())
+        assert await asyncio.to_thread(started.wait,3)
+        try:
+            for revision in range(2,52):
+                s.bind('session',revision,'fixture','fixture')
+                s.control('session','start',revision)
+                s.offer_frame(frame(revision=revision,sequence=revision))
+                await asyncio.sleep(0)
+            live_workers=sum(not task.done() for task in s.workers)
+>           assert live_workers<=1, f'{live_workers} retired inference workers accumulated'
+E           AssertionError: 51 retired inference workers accumulated
+E           assert 51 <= 1
+
+tests/vision/test_service.py:187: AssertionError
+=========================== short test summary info ============================
+FAILED tests/vision/test_service.py::test_repeated_source_switches_keep_one_session_inference_worker
+1 failed in 0.15s

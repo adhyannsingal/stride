@@ -166,3 +166,30 @@ def test_model_lifecycle_loads_once(monkeypatch):
         assert loaded==['model.onnx']
         await s.close()
     asyncio.run(run())
+
+
+def test_repeated_source_switches_keep_one_session_inference_worker():
+    async def run():
+        started,release=threading.Event(),threading.Event()
+        def slow(_):
+            started.set(); assert release.wait(3)
+            return [Detection('chair',.9,(.1,.1,.4,.5))]
+        s,_=setup(slow)
+        s.offer_frame(frame())
+        assert await asyncio.to_thread(started.wait,3)
+        try:
+            for revision in range(2,52):
+                s.bind('session',revision,'fixture','fixture')
+                s.control('session','start',revision)
+                s.offer_frame(frame(revision=revision,sequence=revision))
+                await asyncio.sleep(0)
+            live_workers=sum(not task.done() for task in s.workers)
+            assert live_workers<=1, f'{live_workers} retired inference workers accumulated'
+            release.set()
+            await s.sessions['session'].worker
+            assert s.snapshot('session')['source_revision']==51
+            assert s.snapshot('session')['frame_id']=='51'
+        finally:
+            release.set()
+            await s.close()
+    asyncio.run(run())

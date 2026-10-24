@@ -2,6 +2,7 @@
 import ast
 import io
 import hashlib
+from time import perf_counter
 from pathlib import Path
 from dataclasses import dataclass
 
@@ -18,7 +19,7 @@ class Detection:
 
 
 def iou(a, b):
-    y1, x1, y2, x2 = max(a[0], b[0]), max(a[1], b[1]), min(a[2], b[2]), min(a[3], b[3])
+    x1, y1, x2, y2 = max(a[0], b[0]), max(a[1], b[1]), min(a[2], b[2]), min(a[3], b[3])
     inter = max(0, y2-y1) * max(0, x2-x1)
     union = (a[2]-a[0])*(a[3]-a[1]) + (b[2]-b[0])*(b[3]-b[1]) - inter
     return inter / union if union > 0 else 0
@@ -67,10 +68,25 @@ class OnnxDetector:
         self.confidence, self.nms_iou = confidence, nms_iou
 
     def __call__(self, jpeg):
+        return self.profile(jpeg)[0]
+
+    def profile(self, jpeg):
+        # No frames/tensors are retained by profiling; only stage durations.
+        started = perf_counter()
         image = read_jpeg(jpeg)
+        decoded = perf_counter()
         tensor, geometry = preprocess(image, self.size)
+        preprocessed = perf_counter()
         raw = self.session.run(None, {self.input_name: tensor})[0]
-        return self.decode(raw, geometry)
+        inferred = perf_counter()
+        detections = self.decode(raw, geometry)
+        completed = perf_counter()
+        return detections, {'jpeg_decode_ms': (decoded-started)*1000,
+                            'preprocess_ms': (preprocessed-decoded)*1000,
+                            'inference_ms': (inferred-preprocessed)*1000,
+                            'postprocess_ms': (completed-inferred)*1000,
+                            'detector_ms': (completed-started)*1000}
+
 
     def decode(self, raw, geometry):
         if raw.ndim != 3 or raw.shape[:2] != (1, 4+len(self.names)):
@@ -78,12 +94,16 @@ class OnnxDetector:
         gain, left, top, w, h = geometry
         rows = raw[0].T
         rows = rows[np.isfinite(rows).all(axis=1)]
+        # Select class/score for every anchor in NumPy, then decode only eligible
+        # boxes. YOLOv8n at 320 has 2100 anchors, usually only a few survive.
+        classes = rows[:,4:].argmax(axis=1)
+        scores = rows[np.arange(len(rows)),4+classes].astype(np.float64,copy=False)
+        eligible = np.flatnonzero((scores>=self.confidence) & (scores<=1))
         candidates = []
-        for row in rows:
-            cls = int(row[4:].argmax())
-            score = float(row[4+cls])
-            if score < self.confidence or score > 1:
-                continue
+        for index in eligible:
+            row = rows[index]
+            cls = int(classes[index])
+            score = float(scores[index])
             cx, cy, bw, bh = row[:4]
             x1, y1 = max(0., (cx-bw/2-left)/gain/w), max(0., (cy-bh/2-top)/gain/h)
             x2, y2 = min(1., (cx+bw/2-left)/gain/w), min(1., (cy+bh/2-top)/gain/h)

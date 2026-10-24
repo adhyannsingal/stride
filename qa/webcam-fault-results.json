@@ -1,0 +1,73 @@
+{
+  "source": "real",
+  "origin": "browser_camera",
+  "capture_adapter": "opencv_webcam",
+  "model_sha256": "cbbde35333c4e002b9df32c16be0a7d43166fde7b86fd282a82dc7baaedb15c5",
+  "input": {
+    "captures": 183,
+    "nearly_black": 1
+  },
+  "cases": {
+    "inference_overload": {
+      "offered": 141,
+      "published": 27,
+      "dropped": 114,
+      "pending_peak": 1,
+      "model_inflight_peak": 1,
+      "age_p95_ms": 322.3,
+      "age_max_ms": 383,
+      "status": "PASS"
+    },
+    "expired_inflight_result": {
+      "injected_delay_ms": 1150,
+      "published": 0,
+      "dropped": 1,
+      "final_status": "unavailable",
+      "status": "PASS"
+    },
+    "capture_loss_and_read_time_expiry": {
+      "before": "live",
+      "after": "stale",
+      "age_ms": 1129,
+      "last_objects_count": 2,
+      "current_objects_count": 0,
+      "status": "PASS"
+    },
+    "source-switch": {
+      "final_revision": 2,
+      "retired_frame_published": false,
+      "fresh_frame_published": true,
+      "old_tracks_count": 1,
+      "new_tracks_count": 1,
+      "switch_scope": "logical producer/revision on same physical webcam",
+      "status": "PASS"
+    },
+    "pause": {
+      "final_revision": 1,
+      "retired_frame_published": false,
+      "fresh_frame_published": true,
+      "old_tracks_count": 2,
+      "new_tracks_count": 0,
+      "switch_scope": "logical producer/revision on same physical webcam",
+      "status": "PASS"
+    },
+    "stop": {
+      "final_revision": 1,
+      "retired_frame_published": false,
+      "fresh_frame_published": true,
+      "old_tracks_count": 3,
+      "new_tracks_count": 2,
+      "switch_scope": "logical producer/revision on same physical webcam",
+      "status": "PASS"
+    },
+    "rapid_source_replacement": {
+      "source_changes": 30,
+      "waiting_or_running_workers_peak": 1,
+      "model_inflight_peak": 1,
+      "only_final_revision_published": true,
+      "status": "PASS"
+    }
+  },
+  "status": "PASS",
+  "scope": "Actual local capture and YOLO with injected delays/logical source changes. No hosted network, physical camera switch or phone speech claim."
+}

@@ -1,0 +1,57 @@
+{
+  "source": "real",
+  "origin": "browser_camera",
+  "model_sha256": "cbbde35333c4e002b9df32c16be0a7d43166fde7b86fd282a82dc7baaedb15c5",
+  "threads": 2,
+  "observed_labels": {},
+  "empty_inferred_frames": 360,
+  "stage_ms": {
+    "capture_encode_ms": {
+      "p50": 15.214229468256235,
+      "p95": 45.63408547546715,
+      "max": 214.9512090254575
+    },
+    "jpeg_decode_ms": {
+      "p50": 0.9836659301072359,
+      "p95": 1.62171081174165,
+      "max": 23.275499930605292
+    },
+    "preprocess_ms": {
+      "p50": 2.7405211003497243,
+      "p95": 3.3997603459283714,
+      "max": 12.300999835133553
+    },
+    "inference_ms": {
+      "p50": 20.154208061285317,
+      "p95": 26.644869253505025,
+      "max": 63.90104093588889
+    },
+    "postprocess_ms": {
+      "p50": 1.355104031972587,
+      "p95": 2.2629460436291993,
+      "max": 3.7458338774740696
+    },
+    "detector_ms": {
+      "p50": 25.6932289339602,
+      "p95": 32.40865027764812,
+      "max": 75.30704117380083
+    }
+  },
+  "peak_rss_mib": 165.546875,
+  "duration_s": 60.021,
+  "error": null,
+  "capture_rejections": 0,
+  "capture_hz": 5.997940086660626,
+  "returned_result_hz": 5.997940086660626,
+  "inferred_frames": 360,
+  "dropped_frames": 0,
+  "unique_results": 360,
+  "age_ms": {
+    "p50": 45.5,
+    "p95": 76.0,
+    "max": 283.0
+  },
+  "performance_gate": "PASS",
+  "scope": "local detector; excludes hosted transport, phone speech and W11",
+  "scene_check": "No detected objects; separate camera probe was nearly black. Not a successful scene-recognition test."
+}

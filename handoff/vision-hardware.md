@@ -18,7 +18,7 @@ work and extracted old handoff are preserved. The updated ZIP was extracted to
 - DevKit sensor/local feedback + separate bounded network task; compiled.
 - W11 automatic uploader with board-verification gate; syntax-only compiled.
 - API simulator restricted to simulation routes, plus real-API webcam smoke client.
-- 19 Python tests, native C++ controller checks, export parity and measured webcam.
+- 22 Python tests, native C++ controller checks, export parity and measured webcam.
 
 ## Exact install/model/test commands
 
@@ -171,3 +171,14 @@ Independent sensor/buzzer/motor self-test modes are implemented and compiled,
 including normal-mode regression. Use firmware/README.md for exact build/flash
 commands and mode behavior. No backend or cloud login is needed. Do not confuse
 component bench modes with navigation operation. See qa/feedback-selftest-compile.txt.
+
+## Webcam tuning and measured fault follow-up
+
+See qa/webcam-tuning.md and its JSON evidence. The final visible-scene webcam run
+passes the local 5 Hz/500 ms p95 targets. Per-anchor class filtering is vectorized;
+diagnostic capture preserves aspect ratio and reports nearly black input. Shared
+HTTP/service method signatures are unchanged. A rapid-source-switch worker buildup
+was reproduced and fixed; the same session now retains one inference worker across
+rebinds. All seven measured local fault scenarios and 22 Python tests pass. This
+is independent of Agent 1's hosted app and does not claim phone/network/hardware
+validation. Use scripts/measure_faults.py to reproduce; no raw frames are saved.

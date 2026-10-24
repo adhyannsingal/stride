@@ -1,0 +1,79 @@
+{
+  "source": "real",
+  "origin": "browser_camera",
+  "model_sha256": "cbbde35333c4e002b9df32c16be0a7d43166fde7b86fd282a82dc7baaedb15c5",
+  "encoded_dimensions": [
+    640,
+    360
+  ],
+  "nearly_black_frames": 3,
+  "scene_check": "NOT RUN (no controlled ground truth)",
+  "threads": 2,
+  "observed_labels": {
+    "book": 3,
+    "cup": 60,
+    "dining table": 12,
+    "bottle": 98,
+    "laptop": 203,
+    "mouse": 28,
+    "person": 197,
+    "keyboard": 17,
+    "chair": 117,
+    "tv": 3,
+    "knife": 1,
+    "couch": 31,
+    "bowl": 1,
+    "toilet": 5,
+    "cat": 2,
+    "cell phone": 2
+  },
+  "empty_inferred_frames": 61,
+  "stage_ms": {
+    "capture_encode_ms": {
+      "p50": 29.409936862066388,
+      "p95": 71.73865371150895,
+      "max": 557.8184588812292
+    },
+    "jpeg_decode_ms": {
+      "p50": 1.24910450540483,
+      "p95": 1.9384519546292718,
+      "max": 5.144125083461404
+    },
+    "preprocess_ms": {
+      "p50": 2.184520475566387,
+      "p95": 3.0100873438641425,
+      "max": 17.550791148096323
+    },
+    "inference_ms": {
+      "p50": 18.049645936116576,
+      "p95": 24.32207860983908,
+      "max": 46.40512494370341
+    },
+    "postprocess_ms": {
+      "p50": 0.5644165212288499,
+      "p95": 0.9870144072920077,
+      "max": 8.185000158846378
+    },
+    "detector_ms": {
+      "p50": 22.291458561085165,
+      "p95": 29.361704364418976,
+      "max": 54.87112491391599
+    }
+  },
+  "peak_rss_mib": 156.796875,
+  "duration_s": 60.055,
+  "error": null,
+  "capture_rejections": 0,
+  "capture_hz": 5.628178484654529,
+  "returned_result_hz": 5.6115270690194565,
+  "inferred_frames": 337,
+  "dropped_frames": 0,
+  "unique_results": 337,
+  "age_ms": {
+    "p50": 52.0,
+    "p95": 96.19999999999999,
+    "max": 586.0
+  },
+  "performance_gate": "PASS",
+  "scope": "local detector; excludes hosted transport, phone speech and W11"
+}

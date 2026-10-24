@@ -1,0 +1,83 @@
+{
+  "source": "real",
+  "origin": "browser_camera",
+  "model_sha256": "cbbde35333c4e002b9df32c16be0a7d43166fde7b86fd282a82dc7baaedb15c5",
+  "samples_per_config": 45,
+  "warmup_frames": 5,
+  "observed_labels": {},
+  "detection_disagreements": 0,
+  "stage_ms_by_threads": {
+    "1": {
+      "jpeg_decode_ms": {
+        "p50": 0.5135831888765097,
+        "p95": 1.058791438117623
+      },
+      "preprocess_ms": {
+        "p50": 0.8749170228838921,
+        "p95": 2.2129755932837716
+      },
+      "inference_ms": {
+        "p50": 6.2265831511467695,
+        "p95": 9.452033508569
+      },
+      "postprocess_ms": {
+        "p50": 0.21929200738668442,
+        "p95": 0.351325003430247
+      },
+      "detector_ms": {
+        "p50": 8.29337490722537,
+        "p95": 11.486158054322003
+      }
+    },
+    "2": {
+      "jpeg_decode_ms": {
+        "p50": 0.4895839374512434,
+        "p95": 0.6886164657771584
+      },
+      "preprocess_ms": {
+        "p50": 0.8447919972240925,
+        "p95": 1.19424182921648
+      },
+      "inference_ms": {
+        "p50": 5.044125020503998,
+        "p95": 6.338641932234168
+      },
+      "postprocess_ms": {
+        "p50": 0.21537486463785172,
+        "p95": 0.25875843130052084
+      },
+      "detector_ms": {
+        "p50": 6.6058330703526735,
+        "p95": 7.920816680416465
+      }
+    },
+    "4": {
+      "jpeg_decode_ms": {
+        "p50": 0.49649993889033794,
+        "p95": 0.7378003560006615
+      },
+      "preprocess_ms": {
+        "p50": 0.8386250119656324,
+        "p95": 1.1790327262133358
+      },
+      "inference_ms": {
+        "p50": 5.630000028759241,
+        "p95": 7.663375092670321
+      },
+      "postprocess_ms": {
+        "p50": 0.22962503135204315,
+        "p95": 0.5590421613305806
+      },
+      "detector_ms": {
+        "p50": 7.463291985914111,
+        "p95": 9.280532877892254
+      }
+    }
+  },
+  "selected_threads": 2,
+  "selection_rule": "lowest p95, requiring >=10% gain over two threads",
+  "scope": "local M4 CPU latency comparison; not hosted capacity or scene accuracy",
+  "status": "PASS",
+  "capture_adapter": "opencv_webcam",
+  "scene_check": "No detected objects during comparison; separate probe found nearly black input. Latency evidence only."
+}

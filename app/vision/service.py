@@ -88,7 +88,7 @@ class VisionService:
             raise ValueError('Vision session capacity exceeded')
         if old:
             self._clear(old)
-        self.sessions[session_id] = State(revision, source, origin)
+        self.sessions[session_id] = State(revision, source, origin, worker=old.worker if old else None)
 
     def _clear(self, state):
         state.active = False
@@ -136,7 +136,7 @@ class VisionService:
             s.dropped += 1
         s.pending = f
         if s.worker is None or s.worker.done():
-            s.worker = self._task(self._work(f.session_id,s))
+            s.worker = self._task(self._work(f.session_id))
 
     def _task(self, coroutine):
         task = asyncio.create_task(coroutine)
@@ -144,10 +144,16 @@ class VisionService:
         task.add_done_callback(self.workers.discard)
         return task
 
-    async def _work(self, session_id, s):
-        while s.active and s.pending is not None:
+    async def _work(self, session_id):
+        # A worker follows the session across rebinds. Retiring a source must
+        # not create another waiting worker for every camera-switch request.
+        while not self.closed:
+            s = self.sessions.get(session_id)
+            if s is None or not s.active or s.pending is None:
+                return
             async with self.model_lock:
-                if not s.active or s.pending is None or self.sessions.get(session_id) is not s:
+                s = self.sessions.get(session_id)
+                if s is None or not s.active or s.pending is None:
                     return
                 f, s.pending = s.pending, None
                 generation = s.generation
