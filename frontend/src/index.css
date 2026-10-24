@@ -283,3 +283,54 @@ dd { margin: 0; text-align: right; font-weight: 600; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; }
 }
+
+/* ───────────────────────────────────────────────────────────────────────────
+   iPhone Home Screen (standalone PWA) — safe-area spacing + a11y polish.
+   Additive only: layers insets on top of the existing responsive design without
+   changing any visual rule above. No application behavior is affected.
+   ─────────────────────────────────────────────────────────────────────────── */
+
+/* Desktop/default: pad sticky top nav for the status bar when installed. */
+.app-nav {
+  padding-top: max(var(--space-lg), env(safe-area-inset-top));
+  padding-left: max(var(--space-2xl), env(safe-area-inset-left));
+  padding-right: max(var(--space-2xl), env(safe-area-inset-right));
+}
+
+/* Landing skip link / absolute topbar clear the notch. */
+.skip-link { top: max(var(--space-md), env(safe-area-inset-top)); left: max(var(--space-md), env(safe-area-inset-left)); }
+.topbar {
+  padding-top: max(var(--space-2xl), env(safe-area-inset-top));
+  padding-right: max(var(--space-3xl), env(safe-area-inset-right));
+}
+
+@media (max-width: 900px) {
+  /* Bottom tab bar sits above the home indicator. */
+  .app-nav {
+    height: auto;
+    min-height: 72px;
+    padding-top: var(--space-md);
+    padding-bottom: calc(var(--space-md) + env(safe-area-inset-bottom));
+    padding-left: max(var(--space-md), env(safe-area-inset-left));
+    padding-right: max(var(--space-md), env(safe-area-inset-right));
+  }
+  /* Reserve room for the bottom bar + home indicator so content never hides. */
+  .app-shell { padding-bottom: calc(78px + env(safe-area-inset-bottom)); }
+  /* Floating Stop stays above the bar and the home indicator. */
+  .persistent-stop { bottom: calc(86px + env(safe-area-inset-bottom)); }
+  /* Side padding for landscape notch on dashboard/hero content. */
+  .dashboard-main { padding-left: max(var(--space-xl), env(safe-area-inset-left)); padding-right: max(var(--space-xl), env(safe-area-inset-right)); }
+  .hero { padding-left: max(var(--space-xl), env(safe-area-inset-left)); padding-right: max(var(--space-xl), env(safe-area-inset-right)); }
+}
+
+/* Accessibility polish: guarantee comfortable touch targets and visible focus
+   for the primary interactive controls on touch screens. */
+@media (pointer: coarse) {
+  button, .app-nav-items button, .action-row button, .persistent-stop { min-height: 48px; }
+}
+:focus-visible { outline: 3px solid var(--brand-primary); outline-offset: 3px; }
+
+/* Standalone-install niceties: prevent iOS tap-highlight flash and text auto-zoom. */
+@media (display-mode: standalone) {
+  body { -webkit-tap-highlight-color: transparent; -webkit-text-size-adjust: 100%; }
+}
