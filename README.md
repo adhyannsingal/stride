@@ -45,3 +45,7 @@ Exact W11 pinout is still a vendor/PCB verification gate. HC-SR04 ECHO needs a d
 Each agent supplies actual launch/test commands, commit, passing checks and blockers in its own `handoff/` and `qa/` file. Backend owner updates this README with verified runnable setup once code exists. Keep secrets/images/databases out of Git and use configured Git attribution.
 
 Demonstrate on a checked controlled route with a sighted spotter. Stride targets navigation assistance; this prototype is not validated for independent blind walking or road crossings.
+
+## Webcam demo before hardware arrives
+
+Open the app on Mac as the explicit camera source; open the same session on iPhone in viewer/audio mode. Mac webcam → hosted YOLO → iPhone/AirPods. The phone must not auto-start its camera or change the selected producer. The frontend/backend agents must implement and verify this mode; these docs alone do not add it to an app. Agent 3 prepares both firmware projects while waiting for the parts, expected in 2–3 hours, then starts staged hardware bring-up.

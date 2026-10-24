@@ -69,3 +69,11 @@ You instantiate **one** service in FastAPI lifespan, expose `app.state.vision`, 
 Run focused backend tests for auth/binding, duplicate route actions, frame/source ordering, TTL/boot/ACK behavior, stale/invalid telemetry, simulation isolation, memory filtering and vision adapter integration. Prove `/frame` offers to the real service once and pause/source-switch prevents old publication. Record exact commands/results in `qa/backend.md`.
 
 Deliver `handoff/backend.md`: commit, launch/test commands, environment names, deployed URL, API examples/OpenAPI, agreed model settings, current blockers and endpoints actually tested. Keep README runnable. Use configured Git identity without Codex attribution; no force-push, secrets or purchases. Merge small reviewed slices every 45 minutes, not only at the end.
+
+## Laptop-camera demo: two clients, one session
+
+Support a Mac capture page and an iPhone viewer attached to the **same session_id**. Both log in normally to the hosted origin; joining/viewing an existing session must not create a new session, change its selected camera or increment its source revision. The frontend can accept a manually entered session ID; do not add pairing infrastructure for this sprint. Never put credentials in a share URL.
+
+Retain `origin=browser_camera` for both browser types; distinguish the active capture producer with its bound `camera_device_id`. Extend `POST /sessions/{id}/camera` to accept `camera_origin` plus `camera_device_id` for browser selection, and atomically issue a new revision when that producer changes. Publish the selected producer in `/status`. Only frames from the bound producer/current revision are eligible. Read-only `/status` or `/vision/latest` must not claim camera ownership. Viewer joins/polls cannot reset the source, including when another browser/device opens the app.
+
+Expected demo: Mac webcam → hosted YOLO → iPhone results/AirPods. Phone camera remains unopened; the Mac is intentionally the development capture source. Switching later to W11 uses the same session/API path. Add a regression test: Mac is capture producer, phone joins/polls/hides, Mac frames remain selected; an explicit takeover invalidates retired producer frames.

@@ -93,3 +93,17 @@ Record PASS/FAIL/BLOCKED/NOT RUN, actual source/device, release SHA and evidence
 7. Sensor/driver voltage, mounting, heat and sustained powered checks physically observed. Missing W11 pin map or missing parts are explicit blockers, not simulated passes.
 
 Use a checked controlled route with a sighted spotter. The product targets navigation assistance; the prototype is not validated for independent walking or road crossings. Deliver reproducible launch/model/firmware instructions and actual results. Use configured Git identity; no Codex co-author trailer, secret commits, account purchases or unrelated task expansion.
+
+## Next 2–3 hours: software demo before parts arrive
+
+Use the **Mac webcam as capture source**, hosted inference as planned, and the iPhone solely as viewer/AirPods playback for the same session. Agent 2 owns that browser capture/viewer implementation; you supply the detector and measured evidence, not a second uploader UI. `scripts/live_smoke.py` may upload webcam frames as a standalone diagnostic using an explicitly registered/bound source; stop browser capture before using it. It must not compete with another selected producer. Do not claim a command exists until implemented and tested.
+
+The software demo is Mac webcam → hosted model → phone results/audio. Keep the Mac capture tab foreground and label the source. The laptop supplies images for this development demo; final W11 operation still requires a separate laptop-independent test. The phone must join as viewer without taking over camera ownership.
+
+While waiting for the expected parts in 2–3 hours: finish real model inference, both firmware projects, ignored configuration examples, simulator command/ACK tests and the physical bring-up checklist. As soon as parts arrive, start staged bring-up rather than waiting for the last minutes: identify/verify W11 and run camera-only; test sensor-only; add buzzer; add protected 3 V motor; then bind both boards to the hosted session. Missing exact W11 board data blocks only that camera configuration, not sensor firmware or the software demo.
+
+Firmware deliverables must contain actual compilable source, not just comments:
+
+- `firmware/camera/`: camera initialization using verified board config, automatic JPEG capture/upload, buffer release, TLS/time synchronization, active-source polling, timestamps/revision/sequence and bounded reconnect. Include board/core/PSRAM settings and exact compile/flash steps once verified.
+- `firmware/feedback/`: HC-SR04 trigger/echo sampling and valid/timeout handling; filtered distance bands/hysteresis; local buzzer and motor patterns; priority/preemption; separate bounded networking; telemetry, expiring command polling/deduplication and ACKs; outputs off at boot. Include exact DevKit compile/flash steps and sensor/buzzer/motor self-test modes.
+- Both projects: committed configuration examples, ignored private secrets, actual compile results for verified targets, and explicitly blocked camera configuration when its pinout is still unknown. A successful compile does not establish physical operation.
