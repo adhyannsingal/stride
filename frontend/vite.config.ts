@@ -36,6 +36,11 @@ react(),
       host: process.env.FIGMA_DEV_SERVER_HOST || '0.0.0.0',
       port: parseInt(process.env.PORT || '8443'),
       strictPort: true,
+      // Same-origin browser requests; backend still checks the original Origin.
+      proxy: Object.fromEntries(['/health', '/time', '/auth', '/frame', '/vision', '/routes', '/route', '/memory', '/device', '/status'].map(prefix => [prefix, {
+        target: process.env.STRIDE_DEV_API_TARGET || 'http://127.0.0.1:8000',
+        changeOrigin: false,
+      }])),
       watch: {
         ignored: [
           '**/.figma/**',

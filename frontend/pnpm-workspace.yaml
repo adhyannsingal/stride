@@ -1,0 +1,5 @@
+overrides:
+  '@babel/helper-string-parser': 7.27.1
+  '@babel/parser': 7.28.5
+  '@babel/types': 7.28.5
+  set-cookie-parser: 2.7.1

@@ -63,6 +63,8 @@ export interface HapticCommand {
 }
 
 export interface DeviceStatus {
+  measurement_timeout_ms?: number
+  heartbeat_timeout_ms?: number
   device_id: string
   session_id: string | null
   paired: boolean
@@ -91,6 +93,7 @@ export interface DeviceStatus {
 }
 
 export interface VisionObject {
+  track_id?: string | null
   label: string
   score: number
   bbox: [number, number, number, number]
@@ -98,6 +101,10 @@ export interface VisionObject {
 }
 
 export interface VisionLatest {
+  delivered_ms?: number
+  freshness_basis?: 'server_receipt' | 'aligned_capture'
+  camera_clock_aligned?: boolean
+  result_hz?: number
   state: 'idle' | 'active' | 'paused' | 'stopped'
   status: 'live' | 'stale' | 'paused' | 'unavailable'
   generation: number
@@ -148,12 +155,16 @@ export class ApiError extends Error {
   }
 }
 
-const API_BASE = (import.meta.env.VITE_STRIDE_API_URL || '').replace(/\/$/, '')
+const API_BASE = (import.meta.env?.VITE_STRIDE_API_URL || '').replace(/\/$/, '')
 
-async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
+export async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
+  const timeout = AbortSignal.timeout(8000)
+  const signal = init.signal ? AbortSignal.any([init.signal, timeout]) : timeout
   const response = await fetch(`${API_BASE}${path}`, {
     ...init,
     credentials: 'include',
+    cache: 'no-store',
+    signal,
     headers: {
       ...(init.body instanceof FormData ? {} : { 'Content-Type': 'application/json' }),
       ...init.headers,
@@ -172,14 +183,16 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
 }
 
 export const strideApi = {
-  connect: (session_id: string, session_token: string) =>
+  health: (signal?: AbortSignal) => request<{status: 'ok'}>('/health', {signal}),
+  time: (signal?: AbortSignal) => request<{server_ms: number}>('/time', {signal}),
+  connect: (session_id: string, session_token: string, signal?: AbortSignal) =>
     request<{ session_id: string; expires_ms: number }>('/auth/session', {
-      method: 'POST',
+      method: 'POST', signal,
       body: JSON.stringify({ session_id, session_token }),
     }),
 
-  routes: (sessionId: string) =>
-    request<{ routes: SavedRoute[] }>(`/routes?session_id=${encodeURIComponent(sessionId)}`),
+  routes: (sessionId: string, signal?: AbortSignal) =>
+    request<{ routes: SavedRoute[] }>(`/routes?session_id=${encodeURIComponent(sessionId)}`, {signal}),
 
   routeAction: (
     sessionId: string,
@@ -187,9 +200,10 @@ export const strideApi = {
     action: 'start' | 'confirm' | 'repeat' | 'pause' | 'resume' | 'stop',
     routeId?: string,
     navigation?: NavigationProgress,
+    signal?: AbortSignal,
   ) =>
     request<NavigationProgress & { action_id: string; duplicate: boolean; applied_revision: number }>('/route', {
-      method: 'POST',
+      method: 'POST', signal,
       body: JSON.stringify({
         session_id: sessionId,
         action_id: actionId,
@@ -205,26 +219,27 @@ export const strideApi = {
       }),
     }),
 
-  memory: (sessionId: string) =>
-    request<MemoryResponse>(`/memory?session_id=${encodeURIComponent(sessionId)}&limit=100`),
+  memory: (sessionId: string, signal?: AbortSignal) =>
+    request<MemoryResponse>(`/memory?session_id=${encodeURIComponent(sessionId)}&limit=100`, {signal}),
 
-  pairDevice: (deviceId: string, sessionId: string) =>
+  pairDevice: (deviceId: string, sessionId: string, signal?: AbortSignal) =>
     request<{ device_id: string; session_id: string; paired: boolean; duplicate: boolean }>('/device/pair', {
-      method: 'POST',
+      method: 'POST', signal,
       body: JSON.stringify({ device_id: deviceId, session_id: sessionId }),
     }),
 
-  deviceStatus: (deviceId: string, sessionId: string) =>
-    request<DeviceStatus>(`/device/status?device_id=${encodeURIComponent(deviceId)}&session_id=${encodeURIComponent(sessionId)}`),
+  deviceStatus: (deviceId: string, sessionId: string, signal?: AbortSignal) =>
+    request<DeviceStatus>(`/device/status?device_id=${encodeURIComponent(deviceId)}&session_id=${encodeURIComponent(sessionId)}`, {signal}),
 
   visionAction: (
     sessionId: string,
     actionId: string,
     action: 'start' | 'pause' | 'resume' | 'stop',
     expectedGeneration?: number,
+    signal?: AbortSignal,
   ) =>
     request<{ generation: number; state_seq: number; status: VisionLatest['status'] }>('/vision', {
-      method: 'POST',
+      method: 'POST', signal,
       body: JSON.stringify({
         session_id: sessionId,
         action_id: actionId,
@@ -233,10 +248,21 @@ export const strideApi = {
       }),
     }),
 
-  visionLatest: (sessionId: string) =>
-    request<VisionLatest>(`/vision/latest?session_id=${encodeURIComponent(sessionId)}`),
+  visionLatest: (sessionId: string, signal?: AbortSignal) =>
+    request<VisionLatest>(`/vision/latest?session_id=${encodeURIComponent(sessionId)}`, {signal}),
 
-  uploadFrame: (data: FormData) => request<{ received_ms: number; replaced_pending: boolean }>('/frame', { method: 'POST', body: data }),
+  uploadFrame: (data: FormData, signal?: AbortSignal) => request<{ received_ms: number; replaced_pending: boolean }>('/frame', { method: 'POST', body: data, signal }),
 }
 
 export const newActionId = () => crypto.randomUUID()
+
+export function explainError(cause: unknown): string {
+  if (!(cause instanceof ApiError)) return cause instanceof Error ? cause.message : 'Connection failed. Check the backend and retry.'
+  const hints: Record<number, string> = {
+    401: 'Reconnect with your session credentials.', 403: 'Check the session and allowed controller with the operator.',
+    409: 'Refresh the current state before trying again.', 413: 'Reduce the JPEG size.',
+    415: 'A multipart JPEG is required.', 422: 'Check the request fields.',
+    429: 'Capacity reached. Wait before retrying.', 503: 'Ask the operator to check service configuration.',
+  }
+  return `${cause.message} ${hints[cause.status] || 'Please retry.'}`
+}

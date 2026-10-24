@@ -340,3 +340,33 @@ html[data-stride-text-size='largest'] .stride-app {
     transition-duration: .01ms !important;
   }
 }
+
+/* Dashboard-only reliability/accessibility fixes. Landing styles remain untouched. */
+.stride-app [hidden] { display: none !important; }
+.stride-app .sa-main { padding-bottom: calc(140px + env(safe-area-inset-bottom)); }
+.stride-app .sa-stop { color: #fff !important; bottom: max(var(--space-2xl), env(safe-area-inset-bottom)); }
+.stride-app .sa-video { display: block; height: auto; min-height: 0; object-fit: contain; }
+.stride-app .sa-overlay span { background: transparent; }
+.stride-app .sa-nav button { min-width: 44px; min-height: 44px; }
+.stride-app .sa-panel, .stride-app .sa-primary-panel, .stride-app .sa-secondary-panel { min-width: 0; overflow-wrap: anywhere; }
+.stride-app .sa-route { flex-wrap: wrap; }
+html[data-stride-text-size='large'] .stride-app :is(button, input, p, strong, dd, dt) { font-size: 1.125rem; }
+html[data-stride-text-size='largest'] .stride-app :is(button, input, p, strong, dd, dt) { font-size: 1.25rem; }
+@media (max-width: 900px) {
+  .stride-app .sa-nav { padding-bottom: calc(var(--space-md) + env(safe-area-inset-bottom)); }
+  .stride-app .sa-stop { bottom: calc(84px + env(safe-area-inset-bottom)); }
+  .stride-app .sa-tabs button { font-size: 12px; flex-direction: column; }
+}
+.stride-app .sa-select { display: flex; flex-direction: column; gap: var(--space-sm); max-width: 100%; }
+.stride-app .sa-select label { font-size: 14px; font-weight: 500; }
+.stride-app .sa-select select { min-height: 44px; max-width: 100%; padding: var(--space-md) var(--space-lg); border-radius: var(--corner-md); background: var(--bg-subtle); color: var(--text-primary); font: inherit; }
+@media (max-width: 900px) {
+  html[data-stride-text-size='large'] .stride-app .sa-tabs,
+  html[data-stride-text-size='largest'] .stride-app .sa-tabs { display: grid; grid-template-columns: 1fr 1fr; }
+  html[data-stride-text-size='large'] .stride-app .sa-tabs button,
+  html[data-stride-text-size='largest'] .stride-app .sa-tabs button { flex-direction: row; font-size: 1rem; }
+  html[data-stride-text-size='large'] .stride-app .sa-stop,
+  html[data-stride-text-size='largest'] .stride-app .sa-stop { bottom: calc(132px + env(safe-area-inset-bottom)); }
+  html[data-stride-text-size='large'] .stride-app .sa-main,
+  html[data-stride-text-size='largest'] .stride-app .sa-main { padding-bottom: calc(200px + env(safe-area-inset-bottom)); }
+}
