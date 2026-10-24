@@ -86,3 +86,7 @@ Phase 3 exposes authenticated `GET /routes?session_id=…`, `POST /route` and
 `GET /memory?session_id=…`. Import a custom named route using
 `scripts/import_saved_route.py` with `PYTHONPATH=.:backend_phase3`; see
 [the current handoff](handoff/four-hour-delivery.md) for verification and API details.
+
+## Speak webcam objects and bring up the motor
+
+`PYTHONPATH=. .venv-phase3/bin/python scripts/preview_live.py --speak` enables optional Mac system speech in the local object-awareness preview. Select AirPods as Mac audio output. This is separate from the pending phone/backend speech integration and generates no avoidance directions. Follow [the step-by-step audio, sensor and 3 V motor bring-up](handoff/audio-haptics-bringup.md); the confirmed 3 V component is a vibration motor, and a buzzer is optional.
