@@ -1,14 +1,14 @@
-# Outlook — agent kickoff and Phase 1 review
+# Stride — agent kickoff and Phase 1 review
 
 ## Read this first
 
-Implement Outlook's **continuous live vision, device/firmware integration and final end-to-end delivery** while two teammates build the frontend and backend. Do not duplicate their application or overwrite their work. This brief replaces the earlier three-agent file ownership where it conflicts with the team's updated allocation.
+Implement Stride's **continuous live vision, device/firmware integration and final end-to-end delivery** while two teammates build the frontend and backend. Do not duplicate their application or overwrite their work. This brief replaces the earlier three-agent file ownership where it conflicts with the team's updated allocation.
 
 Product purpose: navigation assistance for blind and low vision users, with continuous objects-ahead awareness, spoken instructions through AirPods and directional vibration. Object finding is secondary. One Start activates the vision loop; repeated Analyze clicks are not acceptable as the primary behavior.
 
 **Repository:** `https://github.com/adhyannsingal/stride`.
 
-**Reviewed branch:** `software`, commit `5cc61fde5f1b65764d5dc8f47aab28be52122aa1`. The root contains `Phase_1`, `README.md` and `buildspec_outlook.md` only. `Phase_1` is a plain-text planning prompt, not executable code. Recheck remote HEAD and all current working changes before starting; teammates may have added implementation since this review.
+**Reviewed branch:** `software`, commit `5cc61fde5f1b65764d5dc8f47aab28be52122aa1`. That reviewed snapshot contains `Phase_1`, `README.md` and the then-named build spec only. `Phase_1` is a plain-text planning prompt, not executable code. Recheck remote HEAD and all current working changes before starting; teammates may have added implementation since this review.
 
 **Time:** the six-hour build clock is already running, followed by one hour for recording/submission. Ask the human for the actual remaining time/deadline if it is not visible; meanwhile begin independent work. Do not restart a six-hour clock or wait for another long planning cycle.
 
@@ -129,7 +129,7 @@ Sample at 100 ms intervals, 10 µs TRIG, 30 ms echo timeout, median of three val
 
 One-motor patterns: left 200 ms ON; right 200 ON/200 OFF/200 ON; straight three 120 ms pulses with 120 ms gaps; stop 800 ms ON. Command IDs, session/generation, remaining TTL ≤1500 ms, ACK and deduplication prevent stale repeated turns. `cancel` cancels remote turns, never local alerts. On reboot/link loss cancel old remote cues; don't replay after recovery.
 
-Physical circuit: motor regulated **3.0 V**, MOSFET/diode/decoupling and common ground; never GPIO-direct or 5 V. HC-SR04 ECHO needs the specified divider. Use `Outlook_Hardware_Wiring_Guide.md` for full connections. Humans perform rail measurements and assembly; you provide source/configuration and interpret logs. Do not claim physical validation from compiled code.
+Physical circuit: motor regulated **3.0 V**, MOSFET/diode/decoupling and common ground; never GPIO-direct or 5 V. HC-SR04 ECHO needs the specified divider. Use `Stride_Hardware_Wiring_Guide.md` for full connections. Humans perform rail measurements and assembly; you provide source/configuration and interpret logs. Do not claim physical validation from compiled code.
 
 ## Deadline priorities
 

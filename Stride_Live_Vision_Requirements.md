@@ -1,4 +1,4 @@
-# Outlook live vision requirement — highest priority update
+# Stride live vision requirement — highest priority update
 
 **User correction:** the glasses must continuously monitor the view ahead while the wearer walks. A button-triggered photograph is not the core vision feature. This update overrides contrary perception/priority instructions in earlier handoff files. No continuous mode is implemented merely by writing this requirement.
 

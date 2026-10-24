@@ -1,10 +1,10 @@
-# Outlook hardware wiring guide
+# Stride hardware wiring guide
 
 **Build:** navigation assistance glasses; W11 ESP32-S3/OV3660 camera plus a separate ESP32 DevKit V1 for sensing and feedback.
 
 **Confirmed equipment:** MacBook Air M4, standard iPhone 14, AirPods Pro 3 and a simple 3 V vibration motor. Verify actual component availability at sprint kickoff; earlier delivery estimates are not proof the parts are on hand.
 
-Use the six-hour `buildspec_outlook.md` for schedule, software ownership and hosted runtime. This guide controls electrical connections and supersedes the earlier 5 V vibration-motor suggestion. **Your motor is rated 3 V.** Use the sensor board's GPIO labels, not physical header positions; DevKit clones vary. The W11 camera pin map remains unverified.
+Use the six-hour `buildspec_stride.md` for schedule, software ownership and hosted runtime. This guide controls electrical connections and supersedes the earlier 5 V vibration-motor suggestion. **Your motor is rated 3 V.** Use the sensor board's GPIO labels, not physical header positions; DevKit clones vary. The W11 camera pin map remains unverified.
 
 ## 1. What goes where
 

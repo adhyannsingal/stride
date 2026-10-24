@@ -1,10 +1,10 @@
 # STRIDE
 
-**Updated October 24, 2026:** use `Outlook_Hardware_Wiring_Guide.md` and `Outlook_Software_Build_Spec.md` for the detailed implementation. Confirmed equipment: MacBook Air M4, iPhone 14, AirPods Pro 3 and a 3 V motor. The iPhone has no LiDAR; the motor requires regulated 3 V. See `Outlook_Tonight_Plan.md` for webcam development without the boards/sensor.
+**Updated October 24, 2026:** use `Stride_Hardware_Wiring_Guide.md` and `Stride_Software_Build_Spec.md` for the detailed implementation. Confirmed equipment: MacBook Air M4, iPhone 14, AirPods Pro 3 and a 3 V motor. The iPhone has no LiDAR; the motor requires regulated 3 V. See `Stride_Tonight_Plan.md` for webcam development without the boards/sensor.
 
 ## Project and scope
 
-**Navigation assistance glasses for blind and low vision users.** Outlook combines spoken route guidance, immediate obstacle alerts and Route Memory. Object finding and last-seen recall are additional features. The intended product supports indoor and outdoor journeys.
+**Navigation assistance glasses for blind and low vision users.** Stride combines spoken route guidance, immediate obstacle alerts and Route Memory. Object finding and last-seen recall are additional features. The intended product supports indoor and outdoor journeys.
 
 **Team:** 3 people · **Build window:** 36–48 hours · **Priority:** hardware first, navigation first.
 
