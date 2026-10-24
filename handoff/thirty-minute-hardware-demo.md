@@ -56,3 +56,25 @@ pass for stop/staleness/recovery/invalid readings/repeats. Actual USB upload,
 real ranges and audible AirPods confirmation must be recorded separately once
 observed. The initial USB adapter enumerates as CP210x at cu.usbserial-0001;
 chip probe is currently failing and requires boot/connection troubleshooting.
+
+## Combined camera + USB sensor voice (new local demo option)
+
+After serial upload/range validation, stop the standalone serial bridge and old
+preview so only one process owns each device, then:
+
+```sh
+PYTHONPATH=. /tmp/stride-phase2-venv/bin/python scripts/preview_live.py --sensor-port /dev/cu.usbserial-0001
+```
+
+The existing YOLO box window and object speech are used. USB sensor danger,
+caution or unknown interrupts/suppresses object narration; three clear samples
+plus completion of the recovery phrase permit fresh object descriptions again.
+It never emits a movement instruction. Q/Esc closes camera, serial and speech;
+P pauses only the camera while sensor warnings continue. Source is explicitly
+Mac-assisted: camera inference and sensor polling share the diagnostic UI loop,
+so no independent warning-latency guarantee is claimed. Keep this supervised.
+The sensor-only firmware leaves local buzzer/motor OFF.
+
+Focused tests pass for sensor voice policy, UART-format warning priority and the
+existing preview speech scheduler. This is not proof of real hardware/AirPods
+playback; that confirmation remains a physical acceptance step.

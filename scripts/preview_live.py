@@ -16,17 +16,22 @@ TITLE='Stride — LIVE webcam detection (local diagnostic)'
 
 def preview(args):
     detector=OnnxDetector(args.model,confidence=args.confidence)
-    audio=PreviewAudio() if args.speak else None
+    audio=PreviewAudio() if args.speak or args.sensor_port else None
+    sensor=None
+    if args.sensor_port:
+        from app.vision.sensor_audio import SensorAudio
+        sensor=SensorAudio(args.sensor_port,audio)
     cap=None; paused=False; ticks=deque(maxlen=60); started=time.monotonic(); seen=False; read_failures=0
     cv2.namedWindow(TITLE,cv2.WINDOW_NORMAL)
     cv2.resizeWindow(TITLE,1000,650)
     print('Live window opening. Focus it: Q/Esc quit, P pause/resume, +/- confidence. No frames saved.',flush=True)
     if audio:
-        print('Local object speech ON via Mac system output. No sensor/route priority or avoidance directions. Select AirPods in macOS.',flush=True)
+        print('Local Mac object speech ON. USB sensor warnings take priority when --sensor-port is supplied. No route/avoidance directions. Select AirPods in macOS.',flush=True)
     try:
         while not args.seconds or time.monotonic()-started<args.seconds:
             began=time.monotonic()
             if audio: audio.tick()
+            if sensor: sensor.poll()
             if paused:
                 image=np.zeros((480,720,3),dtype=np.uint8)
                 cv2.putText(image,'PAUSED — press P to resume',(20,90),cv2.FONT_HERSHEY_SIMPLEX,.8,(255,255,255),2)
@@ -54,7 +59,8 @@ def preview(args):
                 h,w=image.shape[:2]
                 if elapsed>=1000:
                     found=[]
-                if audio:
+                if sensor: sensor.poll()
+                if audio and (sensor is None or sensor.allow_observation):
                     spoken=audio.update(found,began,valid=not quality['nearly_black'])
                     if spoken: print('LOCAL OBJECT AUDIO: '+spoken,flush=True)
                 for obj in found:
@@ -70,6 +76,9 @@ def preview(args):
                 now=time.monotonic(); ticks.append(now)
                 fps=(len(ticks)-1)/(ticks[-1]-ticks[0]) if len(ticks)>1 else 0
                 header=f'LIVE LOCAL | {fps:.1f} fps | read/result {elapsed:.0f} ms | score >= {detector.confidence:.2f}'
+                if sensor:
+                    distance=sensor.policy.last_distance
+                    header=f'USB SENSOR: {sensor.policy.band.upper()} | {distance if distance is not None else "unknown"} cm | MAC CAMERA'
                 if quality['nearly_black']: header='CAMERA INPUT NEARLY BLACK — uncover lens / check lighting'
                 if elapsed>=1000: header='STALE RESULT SUPPRESSED — no current boxes'
                 cv2.rectangle(image,(0,0),(w,30),(20,20,20),-1)
@@ -92,6 +101,7 @@ def preview(args):
             if cv2.getWindowProperty(TITLE,cv2.WND_PROP_VISIBLE)<1: break
             time.sleep(max(0,1/args.hz-(time.monotonic()-began)))
     finally:
+        if sensor: sensor.close()
         if audio: audio.stop()
         if cap is not None: cap.release()
         cv2.destroyAllWindows()
@@ -103,6 +113,7 @@ if __name__=='__main__':
     p.add_argument('--model',default='models/yolov8n.onnx'); p.add_argument('--camera',type=int,default=0)
     p.add_argument('--confidence',type=float,default=.35); p.add_argument('--hz',type=float,default=10)
     p.add_argument('--seconds',type=float,default=0,help='0 leaves preview open until Q/Esc')
+    p.add_argument('--sensor-port',help='Actual USB sensor port; enables Mac speech with sensor warning priority')
     p.add_argument('--speak',action='store_true',help='Mac-only local object speech; not integrated navigation guidance')
     args=p.parse_args()
     if not 0<args.confidence<1 or args.hz<=0 or args.seconds<0: p.error('Invalid confidence/rate/duration')
