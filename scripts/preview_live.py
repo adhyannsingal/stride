@@ -9,6 +9,7 @@ import numpy as np
 from app.vision.capture import encode_capture
 from app.vision.model import OnnxDetector
 from app.vision.preview_audio import PreviewAudio
+from app.vision.http_camera import HttpCamera
 
 
 TITLE='Stride — LIVE webcam detection (local diagnostic)'
@@ -23,6 +24,8 @@ def preview(args):
     print('Live window opening. Focus it: Q/Esc quit, P pause/resume, +/- confidence. No frames saved.',flush=True)
     if audio:
         print('Local object speech ON via Mac system output. No sensor/route priority or avoidance directions. Select AirPods in macOS.',flush=True)
+    if args.camera_url:
+        print('Source: local HTTP camera. Speech requires the prepared camera age header; not hosted clock validation.',flush=True)
     try:
         while not args.seconds or time.monotonic()-started<args.seconds:
             began=time.monotonic()
@@ -32,7 +35,7 @@ def preview(args):
                 cv2.putText(image,'PAUSED — press P to resume',(20,90),cv2.FONT_HERSHEY_SIMPLEX,.8,(255,255,255),2)
             else:
                 if cap is None:
-                    cap=cv2.VideoCapture(args.camera)
+                    cap=HttpCamera(args.camera_url) if args.camera_url else cv2.VideoCapture(args.camera)
                     cap.set(cv2.CAP_PROP_FRAME_WIDTH,640); cap.set(cv2.CAP_PROP_FRAME_HEIGHT,480)
                     if not cap.isOpened(): raise RuntimeError('Webcam unavailable; check camera permission and close competing capture apps')
                 ok,raw=cap.read()
@@ -40,22 +43,26 @@ def preview(args):
                     if audio: audio.stop()
                     read_failures+=1
                     waiting=np.zeros((360,640,3),dtype=np.uint8)
-                    cv2.putText(waiting,'Waiting for webcam... close other camera apps',(15,100),cv2.FONT_HERSHEY_SIMPLEX,.6,(255,255,255),1)
+                    waiting_text='Waiting for HTTP camera: check URL/WiFi' if args.camera_url else 'Waiting for webcam... close other camera apps'
+                    cv2.putText(waiting,waiting_text,(15,100),cv2.FONT_HERSHEY_SIMPLEX,.6,(255,255,255),1)
                     cv2.imshow(TITLE,waiting)
                     if cv2.waitKey(50)&0xff in (27,ord('q'),ord('Q')): break
-                    if read_failures>=30: raise RuntimeError('Webcam unavailable after retries; close competing capture apps')
+                    if read_failures>=30: raise RuntimeError(waiting_text)
                     if read_failures%10==0: cap.release(); cap=None
                     continue
                 read_failures=0
+                captured_at=cap.captured_at if args.camera_url and cap.captured_at is not None else began
+                capture_verified=not args.camera_url or cap.captured_at is not None
                 jpeg,_,quality=encode_capture(raw)
                 found=detector(jpeg)
                 elapsed=(time.monotonic()-began)*1000
+                age_bound=(time.monotonic()-captured_at)*1000
                 image=cv2.imdecode(np.frombuffer(jpeg,dtype=np.uint8),cv2.IMREAD_COLOR)
                 h,w=image.shape[:2]
-                if elapsed>=1000:
+                if elapsed>=1000 or age_bound>=1000:
                     found=[]
                 if audio:
-                    spoken=audio.update(found,began,valid=not quality['nearly_black'])
+                    spoken=audio.update(found,captured_at,valid=not quality['nearly_black'] and capture_verified)
                     if spoken: print('LOCAL OBJECT AUDIO: '+spoken,flush=True)
                 for obj in found:
                     x1,y1,x2,y2=(int(v*d) for v,d in zip(obj.box,(w,h,w,h)))
@@ -70,8 +77,10 @@ def preview(args):
                 now=time.monotonic(); ticks.append(now)
                 fps=(len(ticks)-1)/(ticks[-1]-ticks[0]) if len(ticks)>1 else 0
                 header=f'LIVE LOCAL | {fps:.1f} fps | read/result {elapsed:.0f} ms | score >= {detector.confidence:.2f}'
+                if args.camera_url:
+                    header=f'HTTP CAMERA | {fps:.1f} fps | device age bound {age_bound:.0f} ms' if capture_verified else 'HTTP CAMERA | age header missing: object audio disabled'
                 if quality['nearly_black']: header='CAMERA INPUT NEARLY BLACK — uncover lens / check lighting'
-                if elapsed>=1000: header='STALE RESULT SUPPRESSED — no current boxes'
+                if elapsed>=1000 or age_bound>=1000: header='STALE RESULT SUPPRESSED — no current boxes'
                 cv2.rectangle(image,(0,0),(w,30),(20,20,20),-1)
                 cv2.putText(image,header,(8,21),cv2.FONT_HERSHEY_SIMPLEX,.44,(255,255,255),1,cv2.LINE_AA)
                 cv2.rectangle(image,(0,h-25),(w,h),(20,20,20),-1)
@@ -104,6 +113,7 @@ if __name__=='__main__':
     p.add_argument('--confidence',type=float,default=.35); p.add_argument('--hz',type=float,default=10)
     p.add_argument('--seconds',type=float,default=0,help='0 leaves preview open until Q/Esc')
     p.add_argument('--speak',action='store_true',help='Mac-only local object speech; not integrated navigation guidance')
+    p.add_argument('--camera-url',help='Explicit local camera JPEG endpoint, e.g. http://192.168.1.123/capture; unverified remote capture age')
     args=p.parse_args()
     if not 0<args.confidence<1 or args.hz<=0 or args.seconds<0: p.error('Invalid confidence/rate/duration')
     preview(args)

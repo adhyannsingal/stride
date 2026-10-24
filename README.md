@@ -94,3 +94,7 @@ Phase 3 exposes authenticated `GET /routes?session_id=…`, `POST /route` and
 ### Reliable Mac launcher
 
 Double-click `Start_Stride_Demo.command` in Finder, or run `./Start_Stride_Demo.command` from this checkout. It resolves the checkout folder, checks the prepared Python/model, and keeps interactive errors visible. With `--speak`, a voice may need 2–3 seconds to start; narration continues only while fresh frames confirm that class/image position, is cancelled on lost/stale input or pause, and has a bounded maximum duration.
+
+## Identified Meshnology W11 camera
+
+The exact listing now identifies Meshnology W11. A vendor-matched camera-only build and direct local-camera adapter are prepared: [W11 local demo instructions](handoff/w11-local-demo.md). Use `scripts/prepare_w11_demo.py`, configure private WiFi outside Git, identify the correct USB port, compile/flash, then `./Start_Stride_Demo.command --camera-url http://CAMERA_LAN_IP/capture`. This is a local Mac demo, not hosted deployment. Camera hardware is not yet verified; only the DevKit USB bridge is currently detected.
