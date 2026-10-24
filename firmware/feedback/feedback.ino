@@ -2,10 +2,13 @@
 // GPIO19 MUST receive divided ECHO; GPIO25 drives protected regulated 3 V motor.
 #include <Arduino.h>
 #include "controller.h"
+#include "bench.h"
 #include "stride_network.h"
 stride::Controller feedback;
 RemoteCue activeCue{};
 bool hasActive=false;
+stride::BenchPulse benchPulse;
+uint32_t benchStarted=0, lastBenchLog=0;
 
 void queueAck(const RemoteCue& cue, const char* status) {
   DeviceAck ack{};
@@ -39,12 +42,25 @@ void setup() {
   pinMode(BUZZER,OUTPUT); pinMode(MOTOR,OUTPUT);
   digitalWrite(TRIG,LOW); digitalWrite(BUZZER,LOW); digitalWrite(MOTOR,LOW);
   attachInterrupt(digitalPinToInterrupt(ECHO),echoEdge,CHANGE);
-  if(STRIDE_NETWORK_CONFIGURED) {
+  benchStarted=millis();
+  if(STRIDE_SELF_TEST) Serial.println("BENCH mode: no network; component test only");
+  if(!STRIDE_SELF_TEST && STRIDE_NETWORK_CONFIGURED) {
     if(xTaskCreatePinnedToCore(networkTask,"stride-network",12288,nullptr,1,nullptr,0)!=pdPASS) Serial.println("Network task unavailable; local sensing remains active");
   } else Serial.println("Local-only mode: network config absent");
 }
 void loop() {
   uint32_t now=millis(), us=micros();
+  if(STRIDE_SELF_TEST>=2) {
+    bool on=benchPulse.tick(now-benchStarted);
+    digitalWrite(TRIG,LOW);
+    digitalWrite(BUZZER,STRIDE_SELF_TEST==2 && on);
+    digitalWrite(MOTOR,STRIDE_SELF_TEST==3 && on);
+    if(now-lastBenchLog>=1000) {
+      lastBenchLog=now;
+      Serial.println(now-benchStarted>=2100?"Bench pulse complete; outputs OFF":"Bench pulse pending");
+    }
+    delay(1); return;
+  }
   if (!waiting && now-lastTrigger>=100) {
     portENTER_CRITICAL(&echoLock); complete=false; portEXIT_CRITICAL(&echoLock);
     digitalWrite(TRIG,HIGH); triggerMicros=us; highTrigger=true; waiting=true; lastTrigger=now;
@@ -77,6 +93,13 @@ void loop() {
   sensorSnapshot.cm=feedback.distanceCm(); sensorSnapshot.band=output.band;
   strlcpy(sensorSnapshot.active,hasActive?activeCue.id:"",sizeof(sensorSnapshot.active));
   portEXIT_CRITICAL(&snapshotLock);
-  digitalWrite(MOTOR,output.motor); digitalWrite(BUZZER,output.buzzer);
+  // Sensor-only mode reports readings while keeping both alert drivers OFF.
+  digitalWrite(MOTOR,!STRIDE_SELF_TEST && output.motor);
+  digitalWrite(BUZZER,!STRIDE_SELF_TEST && output.buzzer);
+  if(STRIDE_SELF_TEST==1 && now-lastBenchLog>=100) {
+    lastBenchLog=now;
+    Serial.printf("sensor valid=%d median_cm=%.1f band=%d\n",sensorSnapshot.valid,
+                  feedback.distanceCm(),(int)output.band);
+  }
   // No network/TLS call is allowed on this local timing loop.
 }

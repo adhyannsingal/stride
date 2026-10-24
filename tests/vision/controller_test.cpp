@@ -1,6 +1,14 @@
 #include "../../firmware/feedback/controller.h"
 #include <cassert>
+#include "../../firmware/feedback/bench.h"
 int main() {
+  stride::BenchPulse pulse;
+  assert(!pulse.tick(0)); assert(!pulse.tick(1999));
+  assert(pulse.tick(2000)); assert(pulse.tick(2099));
+  assert(!pulse.tick(2100)); assert(!pulse.tick(2000)); // Cannot replay after completion.
+  stride::BenchPulse delayed;
+  assert(!delayed.tick(5000)); assert(!delayed.tick(2000));
+
   stride::Controller c;
   assert(c.currentBand()==stride::Band::Unknown);
   for(int i=0;i<3;++i)c.sample(120,true,100);

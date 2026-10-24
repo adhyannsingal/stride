@@ -164,3 +164,10 @@ authorize simulation; no alternate backend or mocked production response is adde
 
 Evidence: qa/vision-hardware.md. Existing historical failed runs are preserved.
 No deployment, push, physical flash, account purchase or external messages claimed.
+
+## Follow-up: hardware preparation without Agent 1
+
+Independent sensor/buzzer/motor self-test modes are implemented and compiled,
+including normal-mode regression. Use firmware/README.md for exact build/flash
+commands and mode behavior. No backend or cloud login is needed. Do not confuse
+component bench modes with navigation operation. See qa/feedback-selftest-compile.txt.

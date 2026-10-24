@@ -1,0 +1,15 @@
+sensor (compile only, no physical test):
+Sketch uses 898523 bytes (68%) of program storage space. Maximum is 1310720 bytes.
+Global variables use 44208 bytes (13%) of dynamic memory, leaving 283472 bytes for local variables. Maximum is 327680 bytes.
+
+buzzer (compile only, no physical test):
+Sketch uses 894791 bytes (68%) of program storage space. Maximum is 1310720 bytes.
+Global variables use 43952 bytes (13%) of dynamic memory, leaving 283728 bytes for local variables. Maximum is 327680 bytes.
+
+motor (compile only, no physical test):
+Sketch uses 894791 bytes (68%) of program storage space. Maximum is 1310720 bytes.
+Global variables use 43952 bytes (13%) of dynamic memory, leaving 283728 bytes for local variables. Maximum is 327680 bytes.
+
+normal (compile only, no physical test):
+Sketch uses 898179 bytes (68%) of program storage space. Maximum is 1310720 bytes.
+Global variables use 44208 bytes (13%) of dynamic memory, leaving 283472 bytes for local variables. Maximum is 327680 bytes.

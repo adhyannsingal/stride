@@ -53,3 +53,11 @@ simulate_feedback on the actual deployed URL, then stop the Mac app server and
 check the real iPhone. Human Adhyann identifies W11 and performs staged electrical
 bring-up using firmware/README.md and the root wiring guide. No account purchase,
 external message, remote push, physical flash or deployment was performed.
+
+## Independent bench-mode follow-up
+
+Sensor-only, buzzer-only, motor-only and normal-mode firmware all compile for
+ESP32 core 3.3.2. See feedback-selftest-compile.txt. Native tests prove one 100 ms
+pulse after 2 s, no repeat and no late replay. Sensor-only logs at 10 Hz while
+keeping output drivers OFF; all bench modes disable networking. These checks
+require no backend. Actual component measurements/USB flashing remain NOT RUN.

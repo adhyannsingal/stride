@@ -92,3 +92,26 @@ uploads remain BLOCKED by board facts and backend availability.
 References: [Espressif camera driver](https://github.com/espressif/esp32-camera),
 [Wi-Fi API](https://docs.espressif.com/projects/arduino-esp32/en/latest/api/wifi.html),
 [ArduinoJson 7](https://arduinojson.org/v7/api/jsondocument/).
+
+## Independent component self-tests
+
+No backend is required. All three bench modes disable the network task and remote
+commands. Compile the one mode needed, then flash only the physically checked
+DevKit using its actual USB port (board inventory is still pending):
+
+```sh
+arduino-cli compile --fqbn esp32:esp32:esp32 --build-property 'compiler.cpp.extra_flags=-DSTRIDE_SELF_TEST=1' --build-path /tmp/stride-bench-sensor firmware/feedback
+# Change STRIDE_SELF_TEST to 2 for buzzer or 3 for motor.
+# After a human verifies the target/rails/wiring:
+# arduino-cli upload --fqbn esp32:esp32:esp32 --port ACTUAL_USB_PORT --input-dir /tmp/stride-bench-sensor firmware/feedback
+arduino-cli monitor --port ACTUAL_USB_PORT --config baudrate=115200
+```
+
+Mode 1 logs sensor validity, median cm and band at 10 Hz; motor/buzzer stay OFF.
+Start with sensor-only wiring and the verified ECHO divider. Modes 2 and 3 keep
+TRIG and the unused driver LOW, wait 2 seconds, issue one 100 ms pulse and remain
+OFF thereafter. They do not automatically repeat; reset only for an intentional
+new bench test. Mode 3 requires the measured 3.0 V motor supply and driver from
+the wiring guide. Bench modes are component tests, not navigation operation.
+Recompile without STRIDE_SELF_TEST (default 0) for normal local sensing/network.
+Native tests verify pulse timing and no replay after completion or delayed start.
