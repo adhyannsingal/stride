@@ -73,3 +73,22 @@ def test_pause_and_lost_scene_cancel_only_owned_speech():
     audio.stop()
     assert processes[-1].cancelled
     assert audio.process is None and not audio.announced
+
+
+def test_slow_voice_startup_survives_while_new_frames_confirm_same_object():
+    audio, now, spoken, processes = setup()
+    frame(audio, now, [CHAIR]); frame(audio, now, [CHAIR])
+    for _ in range(30):
+        frame(audio, now, [CHAIR])
+    assert processes[0].running and not processes[0].cancelled
+    assert spoken == ['chair, ahead.']
+    frame(audio, now, [CUP])  # Old content no longer has current visual support.
+    assert processes[0].cancelled
+
+
+def test_continuous_visual_confirmation_does_not_keep_a_stuck_voice_forever():
+    audio, now, spoken, processes = setup()
+    frame(audio, now, [CHAIR]); frame(audio, now, [CHAIR])
+    for _ in range(55):
+        frame(audio, now, [CHAIR])
+    assert processes[0].cancelled

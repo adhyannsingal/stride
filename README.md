@@ -90,3 +90,7 @@ Phase 3 exposes authenticated `GET /routes?session_id=…`, `POST /route` and
 ## Speak webcam objects and bring up the motor
 
 `PYTHONPATH=. .venv-phase3/bin/python scripts/preview_live.py --speak` enables optional Mac system speech in the local object-awareness preview. Select AirPods as Mac audio output. This is separate from the pending phone/backend speech integration and generates no avoidance directions. Follow [the step-by-step audio, sensor and 3 V motor bring-up](handoff/audio-haptics-bringup.md); the confirmed 3 V component is a vibration motor, and a buzzer is optional.
+
+### Reliable Mac launcher
+
+Double-click `Start_Stride_Demo.command` in Finder, or run `./Start_Stride_Demo.command` from this checkout. It resolves the checkout folder, checks the prepared Python/model, and keeps interactive errors visible. With `--speak`, a voice may need 2–3 seconds to start; narration continues only while fresh frames confirm that class/image position, is cancelled on lost/stale input or pause, and has a bounded maximum duration.

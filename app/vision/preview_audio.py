@@ -33,11 +33,14 @@ class PreviewAudio:
         self.tracker = Tracker()
         self.process = None
         self.expires = 0
+        self.deadline = 0
+        self.current_object = None
         self.announced = set()
         self.cooldowns = {}
 
     def _cancel_process(self):
         process, self.process = self.process, None
+        self.current_object = None
         if process is not None and process.poll() is None:
             process.terminate()
             try:
@@ -48,10 +51,11 @@ class PreviewAudio:
 
     def tick(self):
         if self.process is not None:
-            if self.clock() >= self.expires:
+            if self.clock() >= min(self.expires, self.deadline):
                 self._cancel_process()
             elif self.process.poll() is not None:
                 self.process = None
+                self.current_object = None
 
     def stop(self):
         self._cancel_process()
@@ -69,10 +73,15 @@ class PreviewAudio:
         present = {(obj['track_id'], obj['position']) for obj in objects}
         self.announced.intersection_update(present)
         self.cooldowns = {key: stamp for key, stamp in self.cooldowns.items() if now-stamp < 3}
-        if not objects:
-            self._cancel_process()
         if self.process is not None:
-            return None  # Continue tracking; never build a narration backlog.
+            visible = {(obj['label'], obj['position']) for obj in objects}
+            if self.current_object in visible:
+                # macOS voice startup can itself exceed one second. Keep audio
+                # alive only while NEW, fresh frames still confirm its content.
+                # This renews evidence, not the age of the original frame.
+                self.expires = captured_at + 1
+                return None
+            self._cancel_process()
         objects.sort(key=lambda obj: (obj['position'] != 'center', -obj['score']))
         for obj in objects:
             key = (obj['track_id'], obj['position'])
@@ -84,6 +93,8 @@ class PreviewAudio:
             text = f"{obj['label']}, {location}."
             self.process = self.spawn(text)
             self.expires = captured_at + 1
+            self.deadline = now + 5  # A stuck voice process remains bounded.
+            self.current_object = cooldown
             self.announced.add(key)
             self.cooldowns[cooldown] = now
             return text

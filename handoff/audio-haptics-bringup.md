@@ -6,7 +6,7 @@ Confirmed: the 3 V part is a **vibration motor**, not a buzzer. You can bring up
 
 Close the existing webcam preview with Q/Esc before starting another capture. Pair/connect AirPods to the Mac and select them under Control Center → Sound (or System Settings → Sound → Output). The preview uses the selected system output; it cannot verify which headphones receive it. [Apple connection/output instructions](https://support.apple.com/en-us/108786).
 
-From this prepared checkout:
+Easiest: double-click `Start_Stride_Demo.command` in this repository. It selects the checkout folder and prepared interpreter and keeps startup errors visible. Alternatively, from this prepared checkout:
 
 ```sh
 cd /Users/adhyannsingal/Documents/Codex/2026-10-22/referenced-chatgpt-conversation-this-is-an/stride
@@ -93,4 +93,8 @@ With network unconfigured, this is a local sensor→motor test. Move a flat targ
 
 ## Verification status for this change
 
-41 vision/integration tests passed, 2 optional fixture tests skipped; new tests cover stabilization, no speech backlog, expiry, disappearance and pause cleanup. Mocked speech tests establish scheduling behavior, not actual Bluetooth playback. The actual macOS speech-process smoke exited 0 for “Stride audio test.” This does not confirm which output device received it or whether the user heard it. USB enumeration showed only Bluetooth/debug serial entries, with no ESP32 USB board identified; no port was invented or flashed. No ESP32 flash, rail measurement, physical sensor/motor check or AirPods test is implied by passing software tests.
+43 vision/integration tests passed, 2 optional fixture tests skipped; new tests cover stabilization, no speech backlog, expiry, disappearance and pause cleanup. Mocked speech tests establish scheduling behavior, not actual Bluetooth playback. The actual macOS speech-process smoke exited 0 for “Stride audio test.” This does not confirm which output device received it or whether the user heard it. USB enumeration showed only Bluetooth/debug serial entries, with no ESP32 USB board identified; no port was invented or flashed. No ESP32 flash, rail measurement, physical sensor/motor check or AirPods test is implied by passing software tests.
+
+## Speech startup correction
+
+The original preview incorrectly cancelled each macOS speech process after one second. Direct phrases took 2.887 s and 2.190 s in the reproduction, so this could prevent audible output. The corrected preview renews the speech evidence only while newer fresh frames still show the same class/image sector, cancels on disappearance or stale input, and caps each voice process at 5 seconds. Added regressions cover startup longer than one second and the absolute cap. Actual audibility still requires human confirmation.
