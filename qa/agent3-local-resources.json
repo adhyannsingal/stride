@@ -1,0 +1,21 @@
+{
+  "source": "fixture",
+  "origin": "fixture",
+  "model_sha256": "cbbde35333c4e002b9df32c16be0a7d43166fde7b86fd282a82dc7baaedb15c5",
+  "peak_rss_mib": 160.09375,
+  "duration_s": 5.001,
+  "error": null,
+  "capture_rejections": 0,
+  "capture_hz": 5.998990469626124,
+  "returned_result_hz": 5.998990469626124,
+  "inferred_frames": 30,
+  "dropped_frames": 0,
+  "unique_results": 30,
+  "age_ms": {
+    "p50": 9.5,
+    "p95": 28.099999999999994,
+    "max": 34.0
+  },
+  "performance_gate": "NOT RUN (fixture)",
+  "scope": "local detector; excludes hosted transport, phone speech and W11"
+}

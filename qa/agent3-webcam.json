@@ -1,0 +1,21 @@
+{
+  "source": "real",
+  "origin": "browser_camera",
+  "duration_s": 60.022,
+  "error": null,
+  "capture_rejections": 0,
+  "capture_hz": 5.947814653156178,
+  "returned_result_hz": 5.947814653156178,
+  "inferred_frames": 357,
+  "dropped_frames": 0,
+  "unique_results": 357,
+  "age_ms": {
+    "p50": 38.0,
+    "p95": 90.19999999999999,
+    "max": 445.0
+  },
+  "performance_gate": "PASS",
+  "scope": "local detector; excludes hosted transport, phone speech and W11",
+  "model_sha256": "6bf364946671cb19e4bba3c6a0f7621caa75b9ef0567d63f389cfe9dfc62824d",
+  "model_note": "Loaded before re-export; new manifest records the re-exported artifact hash. Same pinned checkpoint; both exports passed parity."
+}

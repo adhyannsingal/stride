@@ -1,0 +1,5 @@
+/Users/adhyannsingal/Documents/outlook/firmware/camera/board_config.example.h:4:29: error: static assertion failed: W11 blocked: verify PCB revision, camera pin map, flash/PSRAM and vendor example first
+   21 | static_assert(STRIDE_W11_VERIFIED, "W11 blocked: verify PCB revision, camera pin map, flash/PSRAM and vendor example first");
+/Users/adhyannsingal/Documents/outlook/firmware/camera/board_config.example.h:4:29: error: static assertion failed: Exact W11 board configuration required
+   93 |   static_assert(STRIDE_W11_VERIFIED,"Exact W11 board configuration required");
+/Users/adhyannsingal/Documents/outlook/firmware/camera/camera.ino:94:28: error: static assertion failed: Use the verified vendor XCLK frequency

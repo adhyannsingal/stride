@@ -1,0 +1,7 @@
+-r requirements-runtime.txt
+pytest==9.1.1
+httpx==0.28.1
+uvicorn==0.54.0
+opencv-python==5.0.0.93
+ultralytics==8.4.187
+onnx==1.23.2

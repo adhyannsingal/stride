@@ -1,0 +1,18 @@
+{
+  "source": "real",
+  "origin": "browser_camera",
+  "duration_s": 1.114,
+  "error": "ValueError: Unsynchronized, future or expired frame",
+  "capture_hz": 0.8975592110987376,
+  "returned_result_hz": 0.0,
+  "inferred_frames": 0,
+  "dropped_frames": 0,
+  "unique_results": 0,
+  "age_ms": {
+    "p50": null,
+    "p95": null,
+    "max": null
+  },
+  "performance_gate": "FAIL",
+  "scope": "local detector; excludes hosted transport, phone speech and W11"
+}

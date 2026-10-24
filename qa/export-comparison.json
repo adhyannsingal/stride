@@ -1,0 +1,24 @@
+[
+  {
+    "fixture": "bus.jpg",
+    "max_abs_error": 0.0010223388671875,
+    "detections": 4,
+    "labels": [
+      "bus",
+      "person",
+      "person",
+      "person"
+    ],
+    "status": "PASS"
+  },
+  {
+    "fixture": "zidane.jpg",
+    "max_abs_error": 0.0010986328125,
+    "detections": 2,
+    "labels": [
+      "person",
+      "person"
+    ],
+    "status": "PASS"
+  }
+]
