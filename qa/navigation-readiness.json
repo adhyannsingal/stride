@@ -1,0 +1,14 @@
+{
+  "scope": "existing Phase 2 backend route/memory inventory; no fake route responses",
+  "health_http": 200,
+  "capabilities": {
+    "GET /routes": "NOT IMPLEMENTED",
+    "POST /routes": "NOT IMPLEMENTED",
+    "POST /route": "NOT IMPLEMENTED",
+    "GET /memory": "NOT IMPLEMENTED",
+    "GET /memory/export": "NOT IMPLEMENTED"
+  },
+  "saved_routes_ready": false,
+  "airpods_playback_tested": false,
+  "note": "Endpoint presence alone cannot prove persistence, checked directions, idempotency or physical audio."
+}

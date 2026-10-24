@@ -1,0 +1,95 @@
+✖ queued observation age increases before playback (1.210417ms)
+✖ unknown observation age fails closed (0.101958ms)
+✖ late cancelled utterance callback cannot override active urgent speech (0.24ms)
+✖ urgent event discards previously queued routine output (0.311583ms)
+✔ repeated backend event ID speaks once (0.069583ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 1
+ℹ fail 4
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 134.753958
+
+✖ failing tests:
+
+test at tests/integration/speech-regression.test.mjs:29:1
+✖ queued observation age increases before playback (1.210417ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+
+  true !== false
+
+      at TestContext.<anonymous> (file:///Users/adhyannsingal/Documents/outlook/tests/integration/speech-regression.test.mjs:34:10)
+      at Test.runInAsyncScope (node:async_hooks:213:14)
+      at Test.run (node:internal/test_runner/test:1106:25)
+      at Test.start (node:internal/test_runner/test:1003:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:358:17) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: true,
+    expected: false,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/integration/speech-regression.test.mjs:37:1
+✖ unknown observation age fails closed (0.101958ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+
+  true !== false
+
+      at TestContext.<anonymous> (file:///Users/adhyannsingal/Documents/outlook/tests/integration/speech-regression.test.mjs:39:10)
+      at Test.runInAsyncScope (node:async_hooks:213:14)
+      at Test.run (node:internal/test_runner/test:1106:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:788:18)
+      at Test.postRun (node:internal/test_runner/test:1235:19)
+      at Test.run (node:internal/test_runner/test:1163:12)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:358:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: true,
+    expected: false,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/integration/speech-regression.test.mjs:43:1
+✖ late cancelled utterance callback cannot override active urgent speech (0.24ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+
+  + 'queued-lower-priority'
+  - 'stop-now'
+
+      at TestContext.<anonymous> (file:///Users/adhyannsingal/Documents/outlook/tests/integration/speech-regression.test.mjs:49:10)
+      at async Test.run (node:internal/test_runner/test:1113:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:788:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'queued-lower-priority',
+    expected: 'stop-now',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/integration/speech-regression.test.mjs:52:1
+✖ urgent event discards previously queued routine output (0.311583ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+
+  true !== false
+
+      at TestContext.<anonymous> (file:///Users/adhyannsingal/Documents/outlook/tests/integration/speech-regression.test.mjs:58:10)
+      at Test.runInAsyncScope (node:async_hooks:213:14)
+      at Test.run (node:internal/test_runner/test:1106:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:788:18)
+      at Test.postRun (node:internal/test_runner/test:1235:19)
+      at Test.run (node:internal/test_runner/test:1163:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:788:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: true,
+    expected: false,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

@@ -1,0 +1,13 @@
+✔ queued observation age increases before playback (1.62425ms)
+✔ unknown observation age fails closed (0.09675ms)
+✔ late cancelled utterance callback cannot override active urgent speech (0.171542ms)
+✔ urgent event discards previously queued routine output (0.287209ms)
+✔ repeated backend event ID speaks once (0.092834ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 149.393375

@@ -1,0 +1,74 @@
+--- a/frontend/src/lib/speech.ts
++++ b/frontend/src/lib/speech.ts
+@@ -33,6 +33,7 @@
+ interface ClockLike {
+   serverNow(): number
+   ageMs(ms: number | undefined | null): number | null
++  monotonicNow?(): number
+ }
+ 
+ export class SpeechController {
+@@ -44,6 +45,8 @@
+   private current: { event: SpeechEvent; rank: number } | null = null
+   private speaking = false
+   private rate = 1
++  private observedAt = new WeakMap<SpeechEvent, number>()
++  private utteranceGeneration = 0
+ 
+   private clock: ClockLike
+   private onState: (s: SpeechState, event?: SpeechEvent | null) => void
+@@ -84,12 +87,14 @@
+   offer(event: SpeechEvent | null | undefined): boolean {
+     if (!event || !event.event_id) return false
+     if (this.consumed.has(event.event_id)) return false
++    this.observedAt.set(event, this.monoNow())
+     if (!this.fresh(event)) {
+       this.consumed.add(event.event_id) // block replay of an expired event
+       return false
+     }
+     this.consumed.add(event.event_id)
+     const rank = this.rank(event)
++    if (rank >= PRIORITY.fault) this.queue = this.queue.filter(item => item.rank >= rank)
+     if (this.current && rank > this.rank(this.current.event)) this.cancelCurrent()
+     this.queue.push({ event, rank })
+     this.queue.sort((a, b) => b.rank - a.rank)
+@@ -98,12 +103,19 @@
+     return true
+   }
+ 
++  private monoNow(): number {
++    return this.clock.monotonicNow?.() ?? performance.now()
++  }
++
+   private fresh(e: SpeechEvent): boolean {
+     const serverNow = this.clock.serverNow()
+     if (e.expires_ms != null && serverNow >= e.expires_ms) return false
+     if (e.kind === 'observation' || e.priority === 'observation') {
+-      const age = e.age_ms != null ? e.age_ms : this.clock.ageMs(e.created_ms)
+-      if (age != null && age > LIVE_UNSPEAKABLE_AGE_MS) return false
++      const receivedAt = this.observedAt.get(e)
++      const age = e.age_ms != null && receivedAt != null
++        ? e.age_ms + Math.max(0, this.monoNow() - receivedAt)
++        : this.clock.ageMs(e.created_ms)
++      if (age == null || !Number.isFinite(age) || age < 0 || age > LIVE_UNSPEAKABLE_AGE_MS) return false
+     }
+     return true
+   }
+@@ -124,7 +136,9 @@
+     this.onState('speaking', item.event)
+     const u = new SpeechSynthesisUtterance(item.event.text || '')
+     u.rate = this.rate
++    const generation = ++this.utteranceGeneration
+     const done = () => {
++      if (generation !== this.utteranceGeneration) return
+       this.speaking = false
+       this.current = null
+       this.onState('ready')
+@@ -140,6 +154,7 @@
+   }
+ 
+   private cancelCurrent() {
++    ++this.utteranceGeneration
+     if (this.supported) window.speechSynthesis.cancel()
+     this.speaking = false
+     this.current = null
