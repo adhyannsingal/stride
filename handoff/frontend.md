@@ -1,101 +1,109 @@
 # Frontend handoff (Agent 2)
 
-Owner: Agent 2 (frontend). Branch: `frontend`. Author: configured Git identity.
+Owner: Agent 2 (frontend). Branch: `feature/frontend` (do not merge to main).
+Author: configured Git identity.
 
-## What exists
+## Two frontends in the repo
 
-A runnable vanilla HTML/CSS/JS frontend under `web/`, built against
-`contracts/API.md` and `contracts/examples.json`. No framework, no build step,
-no plugin toolchain. All backend calls go through one adapter so fixtures and
-the real backend share a single code path.
+| Path | Stack | Status |
+| --- | --- | --- |
+| `frontend/` | React 19 + Vite 8 + Tailwind v4 + `@figma/astraui` | **Primary.** Imported Figma Make design, wired to the backend contract. |
+| `web/` | Vanilla HTML/CSS/JS | Earlier scaffold against the same contract; kept for reference. |
 
-| File | Role |
-| --- | --- |
-| `web/index.html` | Accessible shell: connect, role, speech, live view, route, feedback, find. Large touch targets, skip link, ARIA live regions. Deliberately plain so the Figma Make design can be layered on later without restructuring. |
-| `web/app.css` | Base styles: high contrast, ≥48px targets, visible focus, reduced-motion support. |
-| `web/api.js` | Single API adapter. Fixture vs real mode, same-origin cookie auth, `/time`+RTT clock alignment, raw `image/jpeg` frame upload with contract headers. |
-| `web/fixtures.js` | Explicit, selectable dev fixtures mirroring contract shapes. Route + vision state machines. Never a silent fallback. |
-| `web/speech.js` | Bounded priority speech scheduler. Dedupe by `event_id` across both poll sources, priority preemption, expiry/age rechecks at playback, strict 1000 ms live cutoff. |
-| `web/camera.js` | Capture loop. Explicit producer gesture, 640×480, one request in flight, generation invalidation, cancel on pause/stop/hide. Unmirrored captured pixels. |
-| `tests/browser/logic.test.mjs` | Headless Node tests for the pure logic (fixtures + scheduler). |
+The `frontend/` app is the one that preserves the Figma Make visual design. If
+the team wants a single frontend, `web/` can be retired.
+
+## `frontend/` — import provenance
+
+Imported the OUTER "Build STRIDE Guidance App" export only. The nested
+`stride-frontend.zip` and macOS junk were excluded. Figma plugins in
+`vite.config.ts` and the `.figma/` tooling are kept as-is (they work locally).
 
 ## Run it
 
-Fixtures mode (no backend needed):
+Toolchain on the build machine: Homebrew Node 25, npm 11.6.2. No global
+pnpm/mise/corepack, so use `npx pnpm@10.34.3` (the version pinned in `.mise.toml`).
 
 ```bash
-cd web
-python3 -m http.server 8099
-# open http://127.0.0.1:8099/  (Mode = Fixtures, click Connect)
+cd frontend
+npx pnpm@10.34.3 install            # 264 pkgs; Astra packages resolve on public npm
+npx pnpm@10.34.3 run dev            # Vite dev server (PORT env, default 8443)
+npx pnpm@10.34.3 run build          # production build -> dist/
+npx pnpm@10.34.3 exec tsc --noEmit  # type check
 ```
 
-Against the real backend: Agent 1 serves `web/` as same-origin static files so
-the auth cookie and API share an origin. Select Mode = Real, set the access
-code, Connect.
+Astra setup (per `node_modules/@figma/astraui-kit/guidelines/setup.md`) is
+already satisfied by the export: `@figma/astraui/styles.css` imported in
+`src/index.css`, `ThemeProvider` at the app root. No extra config needed.
 
-Run the logic tests:
+Controller tests (no framework; Node native TS type-stripping):
 
 ```bash
-node tests/browser/logic.test.mjs   # 12 checks, exit 0
+node --experimental-strip-types tests/browser/controllers.test.ts   # 12/12
 ```
+
+## Architecture (wiring)
+
+```
+src/App.tsx                 compose Landing + Dashboard inside ThemeProvider
+src/components/Landing.tsx  landing page — appearance preserved exactly
+src/components/Dashboard.tsx guidance/memory/settings — wired to real state
+src/lib/useStride.ts        React hook composing all controllers
+src/lib/api.ts              single adapter; fixture|real; /time+RTT clock; raw jpeg upload
+src/lib/fixtures.ts         explicit Simulation mode (route + vision state machines)
+src/lib/speech.ts           priority scheduler, dedupe by event_id, 1000ms live cutoff
+src/lib/camera.ts           consent-gated capture loop, generation invalidation
+src/lib/live.ts             no-overlap polling, backoff, abort on hide, stale suppression
+src/lib/types.ts            contract DTOs
+```
+
+## Behavior delivered
+
+- Landing appearance preserved (index.css byte-identical to import; hero/copy unchanged).
+- Confirm / Repeat / Pause / Resume / Stop call `/route`; UI renders authoritative
+  server route state, never increments locally. Repeat does not advance.
+- User-gesture **Enable / test audio**. Status reports **browser speech readiness
+  only** — no claim that AirPods are connected (the web app cannot select the iOS
+  route).
+- Consent gates **every** upload. Browser camera requires: Browser source + consent
+  + explicit "Use this device's camera". Revoking consent stops uploads, bumps the
+  capture generation, clears pending visual output.
+- **Glasses (W11) mode never calls getUserMedia**; it consumes backend results.
+- Live polling suppresses stale results (>1000 ms); speech dedupes by event_id;
+  obstacle/fault priority cancels routine speech.
+- Removed fabrications: invented distances ("8 metres") → position words; "AirPods
+  connected" → browser-speech status; "Demo adapter" → real provider label (or
+  "Simulation (fixtures)"); hardcoded sightings → `/memory`; device details → `/status`.
+- Simulation is explicit and intentionally selected (mode selector), labeled
+  wherever active. Never a silent fallback: real-mode errors surface in `state.lastError`.
+- Settings are functional: text size sets `document.documentElement.dataset.textSize`;
+  speech rate adjusts the scheduler; Light/Dark via Astra `useTheme`.
 
 ## Verified this session
 
-- `node --check` passes for all five modules (Node v25).
-- `tests/browser/logic.test.mjs`: 12/12 checks pass (route start/confirm/repeat/
-  complete semantics, pause/resume/stop, vision paused→live, source-revision
-  bump clears results, canonical xyxy box, speech dedupe, expired drop, priority
-  order, stale-observation unspeakable, source reset).
-- Static serving: `index.html` + all 5 modules return HTTP 200.
-- Headless Chrome boot: ES module graph loads and executes (`setRole` sets
-  `data-role="viewer"` and the role label from JS); no SyntaxError/ReferenceError/
-  module-load failures.
+- `pnpm install --frozen-lockfile`: 264 pkgs, exit 0.
+- `tsc --noEmit`: exit 0 (Astra component prop types match the wiring).
+- `pnpm run build`: exit 0 (25 modules, dist/ emitted).
+- dev server: HTTP 200 on Vite 8.
+- Controller tests: 12/12 pass.
+- Headless Chrome boot of built app: Landing renders (hero title, Open STRIDE,
+  brand-mark, Astra styling) with no app JS errors; appearance intact.
 
-NOT verified (needs real devices / backend): actual AirPods playback, iPhone 14
-behavior, live phone→hosted YOLO→phone path, W11 transport.
+NOT verified (needs real devices/backend): live phone→hosted YOLO→phone,
+actual AirPods playback, W11 transport, on-device mobile layout.
 
-## Flows implemented
-
-1. Connect: mode select, base URL, access code, join-or-create session, health dot.
-2. Role: Viewer (default, never touches camera) vs Camera source (getUserMedia
-   only after the explicit "Use this device's camera" gesture).
-3. Live view: Start navigation activates `/vision` once; camera role uploads
-   automatically; metrics show status/rate/age/origin. Boxes overlay with a
-   stale guard (>1000 ms clears).
-4. Guided route: start/confirm/repeat/pause/resume/stop. Renders authoritative
-   server route state; never increments locally. Repeat never confirms.
-5. Speech: user-gesture enable/test; bounded priority scheduler plays
-   backend-authorized events once.
-6. Find/recall + feedback health panels.
-
-## Expectations of the backend (requests for Agent 1)
+## Requests for Agent 1 (backend)
 
 The `software` branch backend currently implements `/health`, `/time`
-(`{server_ms}`), and `POST /frame`. To light up the full frontend it needs the
-contract endpoints: `/auth`, `POST /sessions`, `POST /sessions/{id}/camera`,
-`GET /routes`, `POST /route`, `GET /status`, `POST /vision`,
-`GET /vision/latest`, `POST /perception`, `GET /memory`.
+(`{server_ms}`) and a **multipart** `POST /frame`. The frontend consumes the full
+contract: `/auth`, `/sessions`, `/sessions/{id}/camera`, `/routes`, `/route`,
+`/status`, `/vision`, `/vision/latest`, `/perception`, `/memory`.
 
-**Contract divergence to resolve (Agent 1 owns the call):** the contract and
-this frontend use raw `Content-Type: image/jpeg` for `POST /frame` with the
-`X-*` headers. The current `software`-branch `/frame` parses
-`multipart/form-data`. Please either (a) accept raw `image/jpeg` per
-`contracts/API.md`, or (b) propose a contract change; the frontend will follow
-the contract once decided. The adapter changes in one place (`web/api.js`
-`uploadFrame`).
+**Contract divergence:** `contracts/API.md` (and this frontend) use raw
+`Content-Type: image/jpeg` + `X-*` headers for `/frame`; the current backend
+parses `multipart/form-data`. Please reconcile to raw jpeg per the contract, or
+propose a contract change. The adapter changes in one place (`src/lib/api.ts`).
 
-Minor: this frontend reads `/time` as `{server_ms}` (software branch) and also
-accepts `{server_time_ms}`.
-
-## README patch request for Agent 1
-
-Add a "Frontend (web/)" run section: serve `web/` as same-origin static files;
-fixtures mode works standalone via `python3 -m http.server` from `web/`.
-
-## Rehearsal checklist for Agent 3
-
-Two-client demo: Mac = Camera source (grant webcam, Start navigation), iPhone =
-Viewer/audio joining the same session ID (Enable audio, select AirPods). Mac
-uploads; phone speaks. Verify: viewer never calls getUserMedia; refreshing the
-viewer stops only its own polling; explicit Stop is global; on W11 selection the
-Mac upload stops and source_revision increments.
+README patch request: add a "Frontend (frontend/)" run section with the
+`npx pnpm@10.34.3` commands above; backend serves the built `dist/` as
+same-origin static files.
