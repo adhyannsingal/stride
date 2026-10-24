@@ -1,4 +1,4 @@
-# Outlook
+# STRIDE
 
 **Updated October 24, 2026:** use `Outlook_Hardware_Wiring_Guide.md` and `Outlook_Software_Build_Spec.md` for the detailed implementation. Confirmed equipment: MacBook Air M4, iPhone 14, AirPods Pro 3 and a 3 V motor. The iPhone has no LiDAR; the motor requires regulated 3 V. See `Outlook_Tonight_Plan.md` for webcam development without the boards/sensor.
 
