@@ -100,10 +100,15 @@ void loop() {
   // Sensor-only mode reports readings while keeping both alert drivers OFF.
   digitalWrite(MOTOR,!STRIDE_SELF_TEST && output.motor);
   digitalWrite(BUZZER,!STRIDE_SELF_TEST && output.buzzer);
-  if(STRIDE_SELF_TEST==1 && now-lastBenchLog>=100) {
+  if(now-lastBenchLog>=100) {
     lastBenchLog=now;
-    Serial.printf("sensor valid=%d median_cm=%.1f band=%d\n",sensorSnapshot.valid,
-                  feedback.distanceCm(),(int)output.band);
+    char distance[24];
+    if(sensorSnapshot.valid) snprintf(distance,sizeof(distance),"%.1f",sensorSnapshot.cm);
+    else strlcpy(distance,"null",sizeof(distance));
+    // Actual sensor measurements for the explicit USB/Mac-assisted voice demo.
+    Serial.printf("STRIDE_SENSOR {\"uptime_ms\":%lu,\"measurement_valid\":%s,\"distance_cm\":%s,\"source\":\"real\",\"sensor_only\":%s}\n",
+                  (unsigned long)now,sensorSnapshot.valid?"true":"false",distance,
+                  STRIDE_SELF_TEST==1?"true":"false");
   }
   // No network/TLS call is allowed on this local timing loop.
 }
