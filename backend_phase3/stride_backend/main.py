@@ -74,9 +74,17 @@ def create_app(settings: Settings | None = None, detector: Detector | None = Non
             await database.run(catalog.install_fixtures)
         await database.run(navigation.recover_after_restart)
         await worker.start()
+        memory_started=False
         try:
+            # Optional adapter hook; detector protocol remains detect(frame).
+            start_memory=getattr(detector,"start_memory",None)
+            if settings.record_stable_sightings and callable(start_memory):
+                await start_memory(memory,store)
+                memory_started=True
             yield
         finally:
+            if memory_started:
+                await detector.close_memory()
             await worker.close()
             store.clear()
 

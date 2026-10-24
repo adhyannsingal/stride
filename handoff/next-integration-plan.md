@@ -1,5 +1,7 @@
 # Next delivery plan — quality, AirPods and saved routes
 
+> Current implementation update: [Phase 3 delivery and remaining work](four-hour-delivery.md). This document preserves earlier evidence; its Phase 2 route/memory gaps are superseded by Phase 3.
+
 Current evidence baseline: main ec837a1 combined backend/YOLO; quality evaluator
 273fdd0; obsolete root Phase_1 removed in 46c1976. This plan follows the actual
 Phase 2 implementation, not an assumption that every planned endpoint exists.

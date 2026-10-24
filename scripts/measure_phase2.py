@@ -7,6 +7,7 @@ from pathlib import Path
 import secrets
 import socket
 import threading
+import tempfile
 import time
 from types import SimpleNamespace
 from uuid import uuid4
@@ -18,10 +19,16 @@ from scripts.live_smoke import run
 
 
 def measure(args):
+    with tempfile.TemporaryDirectory(prefix='stride-http-diagnostic-') as private_db:
+        return _measure(args,Path(private_db)/'diagnostic.sqlite3')
+
+
+def _measure(args,database_path):
     session,device=str(uuid4()),'phase2-local-webcam'
     secret=secrets.token_urlsafe(32)
+    database_options={'database_path':database_path} if 'database_path' in Settings.model_fields else {}
     settings=Settings(_env_file=None,local_dev=False,device_token=secrets.token_urlsafe(32),
-                      session_tokens={session:secret},detector_factory='app.vision.phase2:build_detector')
+                      session_tokens={session:secret},detector_factory='app.vision.phase2:build_detector',**database_options)
     app=create_app(settings)
     if app.state.inference_worker.detector is None:
         raise RuntimeError('Real YOLO adapter failed to load; no substitute')

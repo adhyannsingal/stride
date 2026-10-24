@@ -1,5 +1,7 @@
 # Agent 3 — vision and hardware handoff
 
+> Current implementation update: [Phase 3 delivery and remaining work](four-hour-delivery.md). This document preserves earlier evidence; its Phase 2 route/memory gaps are superseded by Phase 3.
+
 Branch `stride/hardware-vision`, based on main `85d445f`. This handoff is included
 in the Agent 3 commit; run `git log -1 --oneline` for its exact SHA. Shared backend,
 contracts, frontend and deployment files were not rewritten. The original local

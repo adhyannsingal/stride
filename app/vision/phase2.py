@@ -15,6 +15,8 @@ class Phase2Detector:
         self.model = model
         self.max_sessions = max_sessions
         self._sessions = {}
+        self._confirmed = {}
+        self._memory_bridge = None
         # Phase 2 permits multiple worker threads; one shared ONNX call at a time.
         self._lock = Lock()
 
@@ -32,6 +34,9 @@ class Phase2Detector:
             self._sessions[meta.session_id] = (identity, tracker)
             found = self.model(frame.jpeg)
             objects, _candidate = tracker.update(found, monotonic_ms())
+            confirmed=tuple(obj['track_id'] for obj in objects
+                            if tracker.tracks[obj['track_id']]['count']>=2)
+            self._confirmed[meta.session_id]=(meta,frame.generation,confirmed)
             # Phase 2 has no sensor/route priority arbiter yet. Never turn raw
             # candidates into final speech merely to make an audio demo succeed.
             return DetectionBatch(
@@ -41,6 +46,25 @@ class Phase2Detector:
                               for obj in objects),
                 speech_event=None,
             )
+
+
+    def memory_candidates(self):
+        if not self._lock.acquire(blocking=False):
+            return ()
+        try:
+            return tuple(self._confirmed.values())
+        finally:
+            self._lock.release()
+
+    async def start_memory(self, memory, store):
+        from .memory_bridge import StableMemoryBridge
+        self._memory_bridge=StableMemoryBridge(self,memory,store)
+        await self._memory_bridge.start()
+
+    async def close_memory(self):
+        if self._memory_bridge:
+            await self._memory_bridge.close()
+            self._memory_bridge=None
 
 
 def build_detector():

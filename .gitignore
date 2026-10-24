@@ -17,3 +17,5 @@ recordings/
 *.sqlite
 *.sqlite3
 .DS_Store
+data/
+*.sqlite3-*

@@ -2,22 +2,22 @@
 
 AI-powered navigation assistance glasses for blind and low-vision users: checked-route guidance, immediate obstacle alerts, continuous objects-ahead awareness, AirPods speech and directional vibration. Object finding and last-seen recall support the navigation experience.
 
-**Status:** backend Phase 1 and Phase 2 are merged with the Agent 3 vision/firmware work. Phase 2 can run the real YOLO detector through its authenticated upload and continuous inference worker. See [combined setup and API compatibility](handoff/backend-vision-integration.md). Hosted frontend/audio, routes/device policy and physical hardware integration remain incomplete.
+**Status:** backend Phase 3 is merged with the real YOLO detector and firmware work. SQLite saved routes, confirmed checkpoint progress and last-seen memory are implemented and tested. The local live box preview is working. Phone UI/API integration, audible AirPods testing, server device policy and physical hardware remain pending. See [current delivery evidence and remaining work](handoff/four-hour-delivery.md); the earlier [Phase 2 compatibility map](handoff/backend-vision-integration.md) remains useful for auth/frame fields.
 
 ## Run the combined backend locally
 
 From the repository root (Python 3.11):
 
 ```sh
-uv venv --python 3.11 .venv-phase2
-uv pip install --python .venv-phase2/bin/python -r backend_phase2/requirements-vision-dev.txt
+uv venv --python 3.11 .venv-phase3
+uv pip install --python .venv-phase3/bin/python -r backend_phase3/requirements-vision-dev.txt
 # Requires generated models/yolov8n.onnx + matching models/manifest.json.
 # Model export/setup is documented in handoff/backend-vision-integration.md.
-PYTHONPATH=.:backend_phase2 STRIDE_LOCAL_DEV=true STRIDE_DETECTOR_FACTORY=app.vision.phase2:build_detector .venv-phase2/bin/python -m uvicorn stride_backend.main:create_app --factory --host 127.0.0.1 --port 8000 --workers 1
+PYTHONPATH=.:backend_phase3 STRIDE_LOCAL_DEV=true STRIDE_RECORD_STABLE_SIGHTINGS=true STRIDE_DETECTOR_FACTORY=app.vision.phase2:build_detector .venv-phase3/bin/python -m uvicorn stride_backend.main:create_app --factory --host 127.0.0.1 --port 8000 --workers 1
 ```
 
 Open `http://127.0.0.1:8000/docs`. Local development mode is for loopback testing;
-provision the backend's session/device secrets and HTTPS before hosting. Phase 2
+provision the backend's session/device secrets and HTTPS before hosting. Phase 3
 uses multipart `/frame`, `/auth/session`, `/time.server_ms` and object `bbox`;
 these differences from the planned shared contract are documented in the handoff.
 There is one backend worker/controller; the YOLO plugin does not add a second one.
@@ -67,3 +67,22 @@ Demonstrate on a checked controlled route with a sighted spotter. Stride targets
 ## Webcam demo before hardware arrives
 
 Open the app on Mac as the explicit camera source; open the same session on iPhone in viewer/audio mode. Mac webcam → hosted YOLO → iPhone/AirPods. The phone must not auto-start its camera or change the selected producer. The frontend/backend agents must implement and verify this mode; these docs alone do not add it to an app. Agent 3 prepares both firmware projects while waiting for the parts, expected in 2–3 hours, then starts staged hardware bring-up.
+
+## See real webcam boxes now
+
+After installing the vision development dependencies and model above:
+
+```sh
+PYTHONPATH=. .venv-phase3/bin/python scripts/preview_live.py
+```
+
+Focus the window: **P** pauses/resumes, **Q/Esc** quits and releases the camera;
+**+/-** changes only diagnostic confidence. Labels include score and image
+left/center/right. This is a local detector preview; it does not upload frames,
+record memory or speak. Close/pause it before another process opens the webcam.
+Image position does not establish depth, walkable space or a safe direction.
+
+Phase 3 exposes authenticated `GET /routes?session_id=…`, `POST /route` and
+`GET /memory?session_id=…`. Import a custom named route using
+`scripts/import_saved_route.py` with `PYTHONPATH=.:backend_phase3`; see
+[the current handoff](handoff/four-hour-delivery.md) for verification and API details.

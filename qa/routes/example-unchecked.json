@@ -1,0 +1,10 @@
+{
+  "route_id": "replace-with-your-route-id",
+  "name": "Replace with your named route",
+  "description": "UNCHECKED TEMPLATE. Replace every instruction using your actual supervised layout.",
+  "demo_fixture": true,
+  "checkpoints": [
+    {"checkpoint_id":"start","ordinal":0,"landmark":"Replace with named start place","instruction":"Replace with the human-written instruction to the next checkpoint.","direction":"straight"},
+    {"checkpoint_id":"destination","ordinal":1,"landmark":"Replace with named destination","instruction":"Replace with the human-written arrival instruction.","direction":"stop"}
+  ]
+}

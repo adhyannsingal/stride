@@ -32,6 +32,7 @@ class Settings(BaseSettings):
     max_speech_events_per_generation: int = Field(default=256, gt=0, le=4096)
     database_path: Path = Field(default=Path("data/stride.sqlite3"), repr=False)
     load_demo_routes: bool = True
+    record_stable_sightings: bool = False
     guidance_ttl_ms: int = Field(default=10000, gt=0, le=60000)
     max_route_actions_per_session: int = Field(default=2048, gt=0, le=100000)
     max_sightings_per_session: int = Field(default=200, gt=0, le=10000)

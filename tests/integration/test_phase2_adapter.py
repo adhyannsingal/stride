@@ -47,10 +47,11 @@ def test_adapter_session_state_is_bounded():
 
 @pytest.mark.skipif(not Path('qa/private/bus.jpg').exists() or not Path('models/yolov8n.onnx').exists(),
                     reason='Explicit local fixture and exported model required; no download/fallback')
-def test_actual_yolo_through_phase2_auth_ingest_worker_and_latest():
+def test_actual_yolo_through_phase2_auth_ingest_worker_and_latest(tmp_path):
     detector=build_detector()
+    database_options={'database_path':tmp_path/'compatibility.sqlite3'} if 'database_path' in Settings.model_fields else {}
     settings=Settings(_env_file=None,local_dev=True,device_token='fixture-device-token',
-                      session_tokens={'integration':'fixture-ui-token'})
+                      session_tokens={'integration':'fixture-ui-token'},**database_options)
     app=create_app(settings,detector=detector)
     headers={'X-Session-Token':'fixture-ui-token'}
     with TestClient(app) as client:
