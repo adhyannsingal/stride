@@ -56,3 +56,15 @@ No LiDAR on standard iPhone 14. Normal speech is required; head-tracked/world-an
 Test permission denial, no camera, front/rear orientation, session/source switch with late responses, Start once continuous operation, duplicate poll/event IDs, expired queued speech, urgent interruption, offline/stale state, manual checkpoint confirmation, Repeat and Pause/Stop. Include keyboard/focus/VoiceOver labels, large touch targets, readable contrast and actual iPhone/AirPods playback. Record browser/device and real versus fixture source.
 
 Deliver `handoff/frontend.md`: files/commit, exact local preview and real backend setup, implemented flows, API expectations, actual device results and blockers. Add focused browser tests if the harness is available and useful; do not claim physical audio from a mocked test. Give Agent 1 README updates and Agent 3 a short end-to-end rehearsal checklist. Use configured Git author identity, no Codex attribution, no force-push or secret commits.
+
+## Demo now: laptop capture + phone viewer
+
+Implement two explicit page roles: **Camera source** and **Viewer / audio**. Opening the app defaults to viewer and must never call `getUserMedia`, select a new source, start uploads or replace an existing session automatically. Camera permission is requested only after **Use this device's camera**. Selecting browser origin alone must not silently select the phone; display the selected producer/device.
+
+1. On Mac, open the hosted app, log in, create/select the demo session, choose Camera source → Use this device's camera, grant webcam permission and Start live vision. Keep this capture tab foreground.
+2. On iPhone, open the same hosted app, log in and join that exact session ID as Viewer / audio. Tap Enable audio/test speech and select AirPods through iOS. Do not request phone camera access.
+3. Mac uploads continuously; both can render results, but speech defaults OFF on the capture client and ON only after the phone's audio gesture. No duplicate narration from both devices.
+4. Opening/refreshing/hiding the viewer stops only its own polling/playback; it does not send global camera pause/stop or change the producer. The explicit navigation Stop/Pause control still acts on the shared session. Capture-tab hide follows the capture pause policy and exposes unavailable instead of claiming background capture.
+5. When hardware arrives, explicitly select the W11 in the same session; stop Mac upload, update revision and keep the phone in viewer/audio role.
+
+Test this actual two-client flow and switching both ways. A Mac browser cannot select an iPhone camera merely because the same web app is open there. If the current implementation auto-starts phone capture on load, remove that behavior; keep all capture behind the explicit producer-selection gesture. Do not claim this fix exists until the UI code and two-device check pass.
