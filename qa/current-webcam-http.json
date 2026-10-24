@@ -1,0 +1,43 @@
+{
+  "scope": "actual API camera round trip; hosted phone/AirPods/W11 untested",
+  "protocol": "phase2",
+  "source": "real",
+  "origin": "browser_camera",
+  "capture_adapter": "opencv_webcam",
+  "duration_s": 60.08485729107633,
+  "upload_hz": 10.901249158783957,
+  "returned_result_hz": 10.851319773323878,
+  "unique_results": 652,
+  "http_errors": 0,
+  "capture_rejections": 0,
+  "nearly_black_frames": 12,
+  "observed_labels": {
+    "cell phone": 16,
+    "laptop": 108,
+    "tv": 3,
+    "cup": 289,
+    "person": 275,
+    "mouse": 41,
+    "bottle": 4,
+    "remote": 1,
+    "keyboard": 4,
+    "dining table": 67,
+    "knife": 1,
+    "handbag": 1
+  },
+  "error": null,
+  "response_age_ms": {
+    "p50": 115.0,
+    "p95": 134.3499999999998,
+    "max": 492.0
+  },
+  "capture_to_completion_ms": {
+    "p50": 39.0,
+    "p95": 56.0,
+    "max": 412.0
+  },
+  "freshness_basis": "aligned_capture",
+  "camera_clock_aligned": true,
+  "clock_alignment_scope": "trusted shared OS clock (local test only)",
+  "performance_gate": "PASS"
+}
