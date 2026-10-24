@@ -47,18 +47,33 @@ The local loop uses an edge interrupt, 10 us trigger, 100 ms sample interval,
 warning/near/stop bands use 100/60/30 cm and 5 cm hysteresis. The native policy
 has distinct one-motor patterns, TTL/ID bounds and local-warning priority.
 
-A separate task performs TLS telemetry, command polling and ACK transport. Queues
-are bounded: one newest remote cue and eight ACKs. Boot/session/generation checks
-occur before the local loop receives a cue; elapsed HTTP time and queue delay
-are subtracted from remaining TTL. Local network-health age >1 s cancels remote
-patterns. Local sensing continues. Reboot/link recovery cannot replay IDs.
-ACKs describe software acceptance/completion; they do not prove a motor moved.
-A saturated ID ledger fails closed for new commands until a fresh boot/generation.
-Network operation is compiled but NOT tested against Agent 1's real backend.
+A separate task performs bounded TLS telemetry, command polling and ACK transport.
+It now matches [Phase 4's implemented API](../backend_phase3/DEVICE_INTEGRATION.md):
+`X-Device-Token`, `/telemetry`, `/devices/{id}/commands` and `/devices/{id}/ack`.
+Telemetry sends device_id/boot_id/sequence/uptime_ms/measurement_valid/distance_cm
+and source=real. Session association is authorized pairing on the backend, not
+selected by the telemetry body. Provision a separate controller secret and have
+the authorized UI/operator call `/device/pair` before controller operation.
 
-Telemetry response consumes `generation` (or explicit compatibility alias
-`command_generation`). Agent 1 must confirm its field name. Simulation and real
-sessions must stay isolated on the backend.
+Command parsing verifies device/session/boot, delivered status, navigation ID,
+nonnegative revision, known kind and 1..1500 ms remaining TTL. The backend checks
+current revision and expiry during the received ACK BEFORE the cue reaches the
+local loop. Poll plus ACK elapsed time and queue delay are subtracted from TTL.
+Stop/cancel never disable local sensor warnings. Network-health age >1 s cancels
+remote patterns. Queues remain bounded (one cue, eight terminal ACKs); the local
+controller keeps a bounded ID ledger and rejects repeats. A lost one-shot command
+or failed receipt ACK drops the optional cue. Terminal ACKs are retried without
+re-execution; they report software execution, never verified motor movement.
+The ID ledger fails closed when full until device reboot; sample counters/uptime
+are extended to 64 bits. TLS responses require bounded Content-Length <=4096;
+unknown/chunked responses fail closed and need compatible proxy configuration.
+
+Host-side tests decode an actual API command using the SAME firmware parser and
+check identity/status/expiry/revision failures. The complete sketch is compiled.
+This does not prove ESP32 TLS/Wi-Fi timing or physical motor/sensor operation.
+Local bands (100/60/30 cm) differ from conservative backend holds (100/50 cm);
+both are uncalibrated demonstration defaults. Backend clear is never safe-path
+proof. Local warning timing includes median filtering; measure actual latency.
 
 ## W11
 
@@ -77,7 +92,9 @@ path returns its buffer; failed uploads are dropped with no retry backlog.
 Nominal loop pacing is 200 ms; actual sustained rate/age must be measured on W11.
 TLS handshakes/network load may prevent the target rate. This is not a measured
 5 Hz device guarantee. Camera bring-up, compile with verified pins and actual
-uploads remain BLOCKED by board facts and backend availability.
+uploads remain BLOCKED by board facts and backend compatibility: Phase 4 still lacks
+the camera-state endpoint and expects multipart frames, while this uploader uses
+raw JPEG. Do not claim W11 end-to-end compatibility from a syntax compile.
 
 ## Physical checklist (human Adhyann)
 

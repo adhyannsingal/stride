@@ -22,6 +22,10 @@ from .database import Database
 from .memory import MemoryService
 from .navigation import NavigationController, create_navigation_router
 from .route_store import RouteCatalog
+from .device_auth import ControllerAuth
+from .device_api import DeviceMonitor, create_device_router
+from .device_ingestion import ControllerBodyGuard
+from .devices import DeviceService
 from .errors import BackendError, error_response
 from .ingestion import IngestionGuard, MULTIPART_OVERHEAD_BYTES
 from .models import (
@@ -66,6 +70,11 @@ def create_app(settings: Settings | None = None, detector: Detector | None = Non
     catalog = RouteCatalog(database, epoch_clock)
     navigation = NavigationController(database, settings, epoch_clock)
     memory = MemoryService(database, store, settings, epoch_clock)
+    controller_auth = ControllerAuth(settings)
+    devices = DeviceService(database, settings, navigation, clock, epoch_clock)
+    navigation.devices = devices
+    memory.devices = devices
+    device_monitor = DeviceMonitor(database, devices)
 
     @asynccontextmanager
     async def lifespan(app: FastAPI):
@@ -73,22 +82,24 @@ def create_app(settings: Settings | None = None, detector: Detector | None = Non
         if settings.load_demo_routes:
             await database.run(catalog.install_fixtures)
         await database.run(navigation.recover_after_restart)
+        await database.run(devices.initialize)
         await worker.start()
-        memory_started=False
+        await device_monitor.start()
+        memory_started = False
         try:
-            # Optional adapter hook; detector protocol remains detect(frame).
-            start_memory=getattr(detector,"start_memory",None)
+            start_memory = getattr(detector, "start_memory", None)
             if settings.record_stable_sightings and callable(start_memory):
-                await start_memory(memory,store)
-                memory_started=True
+                await start_memory(memory, store)
+                memory_started = True
             yield
         finally:
             if memory_started:
                 await detector.close_memory()
+            await device_monitor.close()
             await worker.close()
             store.clear()
 
-    app = FastAPI(title="STRIDE Backend", version="0.3.0", lifespan=lifespan)
+    app = FastAPI(title="STRIDE Backend", version="0.4.0", lifespan=lifespan)
     app.state.settings = settings
     app.state.frame_store = store
     app.state.inference_worker = worker
@@ -96,7 +107,10 @@ def create_app(settings: Settings | None = None, detector: Detector | None = Non
     app.state.route_catalog = catalog
     app.state.navigation = navigation
     app.state.memory = memory
+    app.state.devices = devices
+    app.state.device_monitor = device_monitor
     app.add_middleware(IngestionGuard, settings=settings, clock=clock, epoch_clock=epoch_clock, session_auth=auth)
+    app.add_middleware(ControllerBodyGuard, settings=settings, controller_auth=controller_auth, clock=clock, epoch_clock=epoch_clock)
     if settings.frontend_origins:
         app.add_middleware(
             CORSMiddleware, allow_origins=list(settings.frontend_origins), allow_credentials=True,
@@ -104,6 +118,7 @@ def create_app(settings: Settings | None = None, detector: Detector | None = Non
         )
     app.include_router(create_vision_router(store, worker, auth))
     app.include_router(create_navigation_router(database, catalog, navigation, memory, auth))
+    app.include_router(create_device_router(database, devices, controller_auth, auth))
 
     @app.exception_handler(BackendError)
     async def handle_backend_error(request: Request, exc: BackendError):

@@ -1,9 +1,41 @@
-# STRIDE backend — Phase 3
+# STRIDE backend — Phases 1–4
 
 Manual checked-route navigation and SQLite route memory, added to the existing
 Phase 2 application. Source is in `stride_backend/`; Phase 1/2 endpoints and the
 Detector protocol/factory remain compatible. No frontend, model, firmware or
 physical haptic delivery is included.
+
+## Phase 4 controller integration
+
+Implemented in this same application; `backend/` is untouched and no
+`backend_phase4/` was created. See [DEVICE_INTEGRATION.md](DEVICE_INTEGRATION.md)
+for exact hardware/frontend contracts, provisioning, curl examples, TTL/ACK rules
+and remaining physical verification.
+
+New APIs: `POST /device/pair`, `POST /telemetry`,
+`GET /devices/{device_id}/commands`, `POST /device/ack`,
+`POST /devices/{device_id}/ack`, and `GET /device/status`.
+Aliases `/device/telemetry` and `/device/commands?device_id=...` share the same
+implementation. Existing camera, vision, route and memory endpoints remain.
+
+Per-controller secrets and an operator-configured device/session allowlist are
+required in production; authorized UI pairing is explicit. Browser cookies do
+not authorize hardware calls. No credentials are stored in SQLite.
+
+Defaults are danger <=50 cm, caution <=100 cm and unknown for invalid/stale data,
+with 5 cm recovery hysteresis. Paired routes conservatively hold on caution or
+unknown as well as danger. Three consecutive fresh valid readings >105 cm clear
+the hold to paused; explicit resume is still required. Without a paired controller,
+Phase 3 demo behavior remains labeled `sensor_monitoring=not_associated`.
+
+One-shot optional haptic cues expire after 1,000 ms (maximum configurable 1,500).
+Stop/cancel supersede route turns. Delivery, receipt and firmware-reported execution
+are distinct; none verify the wearer perceived a cue. The ESP32's immediate local
+warning loop must remain independent of the backend/Wi-Fi/phone/YOLO.
+
+An additive devices schema/component version preserves all route/memory tables
+and base schema version 1. Telemetry/boot/command/audit retention is bounded.
+Restart cancels active commands and treats persisted telemetry as stale.
 
 ## Run and test
 
@@ -30,7 +62,7 @@ replica**: Phase 2 live state remains in memory. Hosting must supply HTTPS,
 `STRIDE_LOCAL_DEV=false`, the existing camera token, session-specific UI tokens,
 exact allowed frontend origins, and a writable persistent database path.
 
-Verification: **184 passed, 1 skipped**. The skipped test requires the real YOLO
+Verification: **261 passed, 1 skipped**. The skipped test requires the real YOLO
 adapter/image; one upstream Starlette/httpx deprecation warning remains.
 
 ## SQLite
@@ -199,11 +231,11 @@ authoritative navigation and `duplicate=true`, with their original
 are remembered. History is bounded by `STRIDE_MAX_ROUTE_ACTIONS_PER_SESSION`, with
 one reserved successful stop record; it is never silently evicted to permit replay.
 
-Blocking has only an internal unit-tested seam:
+The navigation controller retains its internal sensor seam:
 `NavigationController.apply_obstacle(..., ObstacleObservation(...))`. Fresh valid
 obstacle input blocks; only fresh valid clear input changes blocked to paused,
 then a human explicitly resumes. Unknown/stale observations leave it blocked.
-No physical telemetry is connected in Phase 3.
+Phase 4 now calls this seam transactionally from authenticated controller telemetry. Actual physical telemetry/actuation remains unverified.
 
 ## Frontend guidance handling
 

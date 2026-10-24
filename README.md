@@ -2,7 +2,7 @@
 
 AI-powered navigation assistance glasses for blind and low-vision users: checked-route guidance, immediate obstacle alerts, continuous objects-ahead awareness, AirPods speech and directional vibration. Object finding and last-seen recall support the navigation experience.
 
-**Status:** backend Phase 3 is merged with the real YOLO detector and firmware work. SQLite saved routes, confirmed checkpoint progress and last-seen memory are implemented and tested. The local live box preview is working. Phone UI/API integration, audible AirPods testing, server device policy and physical hardware remain pending. See [current delivery evidence and remaining work](handoff/four-hour-delivery.md); the earlier [Phase 2 compatibility map](handoff/backend-vision-integration.md) remains useful for auth/frame fields.
+**Status:** backend Phase 4 is integrated into `backend_phase3/` (version 0.4.0) together with the real YOLO detector and firmware work. SQLite saved routes, confirmed checkpoint progress and last-seen memory are implemented and tested. The local live box preview is working. Device telemetry, conservative route holds and expiring haptic commands are implemented. Phone UI/API integration, central speech arbitration, audible AirPods testing, camera producer policy and physical hardware remain pending. See [Phase 4 integration](handoff/phase4-integration.md). See [current delivery evidence and remaining work](handoff/four-hour-delivery.md); the earlier [Phase 2 compatibility map](handoff/backend-vision-integration.md) remains useful for auth/frame fields.
 
 ## Run the combined backend locally
 

@@ -7,6 +7,7 @@ import sqlite3
 from starlette.concurrency import run_in_threadpool
 
 from .errors import BackendError
+from .device_schema import DEVICE_SCHEMA
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS routes (
@@ -109,6 +110,13 @@ class Database:
                 if statement.strip():
                     connection.execute(statement)
             connection.execute("PRAGMA user_version=1")
+            for statement in DEVICE_SCHEMA.split(";"):
+                if statement.strip():
+                    connection.execute(statement)
+            component = connection.execute("SELECT version FROM schema_migrations WHERE component='devices'").fetchone()
+            if component and component[0] != 1:
+                raise RuntimeError("Unsupported STRIDE device schema version")
+            connection.execute("INSERT OR IGNORE INTO schema_migrations(component,version) VALUES('devices',1)")
 
     async def run(self, function, *args, **kwargs):
         try:

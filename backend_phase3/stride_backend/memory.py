@@ -23,12 +23,15 @@ class MemoryService:
         self.settings = settings
         self.clock = clock
         self.vision_instance_id = str(uuid4())
+        self.devices = None
 
     def read(self, session_id: str, *, include_events=False, limit=25) -> MemoryResponse:
         if not 1 <= limit <= 100:
             raise BackendError(422, "invalid_limit", "Memory limit must be between 1 and 100")
         now = self.clock()
-        with self.database.transaction() as connection:
+        with self.database.transaction(write=bool(self.devices and self.devices.enabled)) as connection:
+            if self.devices and self.devices.enabled:
+                self.devices.after_navigation(connection, session_id)
             current = current_navigation(connection, session_id)
             rows = connection.execute(
                 "SELECT * FROM navigation_sessions WHERE session_id=? AND navigation_id!=? ORDER BY created_at DESC,rowid DESC LIMIT ?",
@@ -54,8 +57,8 @@ class MemoryService:
                 sightings.append(Sighting(**values))
             return MemoryResponse(
                 session_id=session_id, routes=list_routes(connection, limit).routes,
-                navigation=progress(connection, current, now) if current else None,
-                previous_navigation=tuple(progress(connection, row, now) for row in rows),
+                navigation=progress(connection, current, now, devices=self.devices) if current else None,
+                previous_navigation=tuple(progress(connection, row, now, devices=self.devices) for row in rows),
                 route_events=events, sightings=tuple(sightings), returned_at=now,
             )
 

@@ -35,7 +35,7 @@ def insert_event(connection, navigation_id, action, prior, resulting, index, tim
     )
 
 
-def progress(connection, navigation, now) -> NavigationProgress:
+def progress(connection, navigation, now, *, devices=None) -> NavigationProgress:
     route = read_route(connection, navigation["route_id"])
     checkpoints = route.checkpoints
     count = navigation["confirmed_count"]
@@ -48,6 +48,7 @@ def progress(connection, navigation, now) -> NavigationProgress:
     if row:
         values = dict(row)
         values["valid"] = bool(values["valid"] and values["expires_at"] > now and route.checked
+                               and (devices is None or devices.can_guide(connection, navigation["session_id"]))
                                and navigation["state"] == "guiding" and values["state_revision"] == navigation["revision"])
         event = GuidanceEvent(**values)
     messages = {
@@ -69,6 +70,7 @@ def progress(connection, navigation, now) -> NavigationProgress:
         guidance_event_id=event.event_id if event else None, guidance_event=event,
         status_message=messages[navigation["state"]],
         created_at=navigation["created_at"], updated_at=navigation["updated_at"],
+        **(devices.progress_fields(connection, navigation["session_id"]) if devices else {}),
     )
 
 
@@ -77,6 +79,7 @@ class NavigationController:
         self.database = database
         self.settings = settings
         self.clock = clock
+        self.devices = None
 
     def _guidance(self, connection, navigation):
         route = read_route(connection, navigation["route_id"])
@@ -159,6 +162,8 @@ class NavigationController:
         serialized = request.model_dump_json()
         error = None
         with self.database.transaction(write=True) as connection:
+            if self.devices and self.devices.enabled:
+                self.devices.after_navigation(connection, request.session_id)
             previous = connection.execute("SELECT * FROM route_actions WHERE session_id=? AND action_id=?", (request.session_id, request.action_id)).fetchone()
             if previous:
                 if previous["request_json"] != serialized:
@@ -175,6 +180,8 @@ class NavigationController:
                 connection.execute("SAVEPOINT navigation_action")
                 try:
                     self._apply(connection, request)
+                    if self.devices and self.devices.enabled:
+                        self.devices.after_navigation(connection, request.session_id)
                 except BackendError as exc:
                     connection.execute("ROLLBACK TO navigation_action")
                     error = exc
@@ -192,7 +199,7 @@ class NavigationController:
                     )
             if error is None:
                 head = current_navigation(connection, request.session_id)
-                result = RouteResponse(**progress(connection, head, self.clock()).model_dump(), action_id=request.action_id,
+                result = RouteResponse(**progress(connection, head, self.clock(), devices=self.devices).model_dump(), action_id=request.action_id,
                                        duplicate=previous is not None, applied_revision=applied_revision)
         if error:
             raise error
@@ -211,21 +218,43 @@ class NavigationController:
                 insert_event(connection, navigation["navigation_id"], "process_restart", "guiding", "paused", navigation["current_index"], self.clock())
 
     def apply_obstacle(self, session_id: str, navigation_id: str, expected_revision: int, observation: ObstacleObservation):
-        """Unit-tested internal seam only. No hardware telemetry is connected."""
+        """Internal sensor seam; caller must verify freshness/validity."""
         with self.database.transaction(write=True) as connection:
-            navigation = current_navigation(connection, session_id)
-            if navigation is None or navigation["navigation_id"] != navigation_id or navigation["revision"] != expected_revision:
-                raise BackendError(409, "navigation_conflict", "Navigation identity or revision has changed")
-            if not observation.fresh or not observation.valid or observation.obstacle is None:
-                return progress(connection, navigation, self.clock())
-            state = navigation["state"]
-            next_state = "blocked" if observation.obstacle and state in {"guiding", "paused"} else "paused" if not observation.obstacle and state == "blocked" else state
-            if next_state != state:
-                invalidate_guidance(connection, navigation_id)
-                connection.execute("UPDATE navigation_sessions SET state=?,revision=revision+1,updated_at=? WHERE navigation_id=?", (next_state, self.clock(), navigation_id))
-                connection.execute("UPDATE navigation_heads SET revision=revision+1 WHERE session_id=?", (session_id,))
-                insert_event(connection, navigation_id, "obstacle_block" if next_state == "blocked" else "obstacle_clear", state, next_state, navigation["current_index"], self.clock())
-            return progress(connection, current_navigation(connection, session_id), self.clock())
+            result = self.apply_obstacle_in_transaction(connection, session_id, navigation_id, expected_revision, observation)
+            if self.devices and self.devices.enabled:
+                self.devices.after_navigation(connection, session_id)
+                result = progress(connection, current_navigation(connection, session_id), self.clock(), devices=self.devices)
+            return result
+
+    def _sensor_transition(self, connection, navigation, next_state, action):
+        if navigation['state'] != next_state:
+            invalidate_guidance(connection, navigation['navigation_id'])
+            connection.execute("UPDATE navigation_sessions SET state=?,revision=revision+1,updated_at=? WHERE navigation_id=?", (next_state, self.clock(), navigation['navigation_id']))
+            connection.execute("UPDATE navigation_heads SET revision=revision+1 WHERE session_id=?", (navigation['session_id'],))
+            insert_event(connection, navigation['navigation_id'], action, navigation['state'], next_state, navigation['current_index'], self.clock())
+            if self.devices and self.devices.enabled:
+                # Retain human confirmations/actions; bound only sensor-generated
+                # audit transitions so a noisy device cannot grow history forever.
+                connection.execute(
+                    "DELETE FROM route_events WHERE navigation_id=? AND action IN ('sensor_unknown','sensor_caution','sensor_danger','sensor_clear','controller_reboot','obstacle_clear','obstacle_block') AND seq NOT IN (SELECT seq FROM route_events WHERE navigation_id=? AND action IN ('sensor_unknown','sensor_caution','sensor_danger','sensor_clear','controller_reboot','obstacle_clear','obstacle_block') ORDER BY seq DESC LIMIT ?)",
+                    (navigation['navigation_id'], navigation['navigation_id'], self.settings.device_events_per_navigation),
+                )
+
+    def hold_for_device(self, connection, session_id, reason):
+        """Conservative hold for unknown/caution/danger; never labels unknown clear."""
+        navigation = current_navigation(connection, session_id)
+        if navigation and navigation['state'] in {'guiding', 'paused'}:
+            self._sensor_transition(connection, navigation, 'blocked', reason)
+
+    def apply_obstacle_in_transaction(self, connection, session_id, navigation_id, expected_revision, observation):
+        navigation = current_navigation(connection, session_id)
+        if navigation is None or navigation['navigation_id'] != navigation_id or navigation['revision'] != expected_revision:
+            raise BackendError(409, 'navigation_conflict', 'Navigation identity or revision has changed')
+        if observation.fresh and observation.valid and observation.obstacle is not None:
+            state = navigation['state']
+            next_state = 'blocked' if observation.obstacle and state in {'guiding', 'paused'} else 'paused' if not observation.obstacle and state == 'blocked' else state
+            self._sensor_transition(connection, navigation, next_state, 'obstacle_block' if next_state == 'blocked' else 'obstacle_clear')
+        return progress(connection, current_navigation(connection, session_id), self.clock(), devices=self.devices)
 
 
 def create_navigation_router(database, catalog, controller, memory, auth):

@@ -1,0 +1,57 @@
+{
+  "source": "simulated",
+  "application": "real Phase 4 create_app",
+  "physical_alert_verified": false,
+  "audible_speech_verified": false,
+  "events": [
+    {
+      "step": "clear_route",
+      "state": "guiding",
+      "command": "straight",
+      "simulated_ack": "executed",
+      "firmware_command": {
+        "command_id": "c685285d-c66a-4d98-922f-0195f42ad49f",
+        "device_id": "simulation-controller",
+        "session_id": "simulation-session",
+        "boot_id": "simulation-boot",
+        "navigation_id": "603dd345-45a2-43e4-9ea7-82450b0c1ad7",
+        "state_revision": 1,
+        "kind": "straight",
+        "priority": 10,
+        "created_at": 1700000010000,
+        "expires_at": 1700000011000,
+        "remaining_ttl_ms": 1000,
+        "status": "delivered",
+        "execution_reported": false,
+        "perception_verified": false
+      }
+    },
+    {
+      "step": "20cm_obstacle",
+      "state": "blocked",
+      "previous_guidance_valid": false,
+      "command": "stop"
+    },
+    {
+      "step": "sensor_timeout",
+      "state": "blocked",
+      "obstacle": "unknown",
+      "current_distance_cm": null
+    },
+    {
+      "step": "invalid_no_echo",
+      "state": "blocked",
+      "obstacle": "unknown"
+    },
+    {
+      "step": "three_clear_samples",
+      "state": "paused",
+      "automatic_resume": false
+    },
+    {
+      "step": "explicit_resume",
+      "state": "guiding",
+      "instruction": "Proceed to checkpoint A."
+    }
+  ]
+}
