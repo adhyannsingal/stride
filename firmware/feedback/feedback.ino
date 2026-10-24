@@ -12,7 +12,7 @@ uint32_t benchStarted=0, lastBenchLog=0;
 
 void queueAck(const RemoteCue& cue, const char* status) {
   DeviceAck ack{};
-  strlcpy(ack.id,cue.id,sizeof(ack.id)); strlcpy(ack.generation,cue.generation,sizeof(ack.generation));
+  strlcpy(ack.id,cue.id,sizeof(ack.id));
   strlcpy(ack.status,status,sizeof(ack.status));
   if(xQueueSend(ackQueue,&ack,0)!=pdTRUE) Serial.println("ACK buffer full; delivery unverified");
 }
@@ -78,14 +78,18 @@ void loop() {
     else {
       cancelActive("rejected");
       uint32_t elapsed=cue.elapsed+(now-cue.received);
-      bool accepted=health && now-health<=1000 && feedback.command(cue.id,cue.pattern,cue.ttl,elapsed,now);
-      queueAck(cue,accepted?"accepted":(cue.ttl<=elapsed?"expired":"rejected"));
+      if(cue.pattern==stride::Pattern::None) {
+        // Authenticated cancel affects only remote cues, never local warnings.
+        queueAck(cue,cue.ttl>elapsed?"executed":"expired");
+      }
+      bool accepted=cue.pattern!=stride::Pattern::None && health && now-health<=1000 && feedback.command(cue.id,cue.pattern,cue.ttl,elapsed,now);
+      if(cue.pattern!=stride::Pattern::None && !accepted) queueAck(cue,cue.ttl<=elapsed?"expired":"rejected");
       if(accepted) { activeCue=cue; activeCue.received=now; activeCue.ttl=cue.ttl-elapsed; hasActive=true; }
     }
   }
   auto output=feedback.tick(now);
   if(hasActive && !feedback.remoteActive()) {
-    const char* status=output.band!=stride::Band::Clear?"rejected":now-activeCue.received>=activeCue.ttl?"expired":"completed";
+    const char* status=output.band!=stride::Band::Clear?"rejected":now-activeCue.received>=activeCue.ttl?"expired":"executed";
     queueAck(activeCue,status); hasActive=false;
   }
   portENTER_CRITICAL(&snapshotLock);

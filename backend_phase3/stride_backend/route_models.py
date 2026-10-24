@@ -107,6 +107,9 @@ class NavigationProgress(FrozenModel):
     status_message: str
     physical_position_known: Literal[False] = False
     progress_source: Literal["user_confirmation"] = "user_confirmation"
+    sensor_monitoring: Literal["not_associated", "unknown", "fresh_measurement"] = "not_associated"
+    paired_device_id: str | None = None
+    obstacle_state: Literal["clear", "caution", "danger", "unknown"] | None = None
     created_at: NonNegativeInt
     updated_at: NonNegativeInt
 

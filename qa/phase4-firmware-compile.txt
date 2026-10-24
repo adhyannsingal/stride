@@ -1,0 +1,12 @@
+Arduino-ESP32 3.3.2 / ArduinoJson 7.4.2
+
+feedback.log
+Sketch uses 898211 bytes (68%) of program storage space. Maximum is 1310720 bytes.
+Global variables use 44144 bytes (13%) of dynamic memory, leaving 283536 bytes for local variables. Maximum is 327680 bytes.
+
+camera-syntax.log
+Sketch uses 995483 bytes (75%) of program storage space. Maximum is 1310720 bytes.
+Global variables use 44752 bytes (13%) of dynamic memory, leaving 282928 bytes for local variables. Maximum is 327680 bytes.
+
+PASS: firmware/check.sh completed; unconfigured W11 gate rejected build.
+No flash, physical validation or real ESP32 HTTPS exchange.

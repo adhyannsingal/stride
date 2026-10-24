@@ -11,12 +11,8 @@
 #include "secrets.example.h"
 #endif
 
-struct RemoteCue {
-  char id[65], generation[65];
-  stride::Pattern pattern;
-  uint32_t ttl, elapsed, received;
-};
-struct DeviceAck { char id[65],generation[65],status[12]; };
+#include "phase4_protocol.h"
+struct DeviceAck { char id[65],status[12]; };
 struct SensorSnapshot { float cm; bool valid; stride::Band band; char active[65]; };
 QueueHandle_t commandQueue, ackQueue;
 SensorSnapshot sensorSnapshot={0,false,stride::Band::Unknown,{0}};
@@ -41,7 +37,7 @@ bool jsonRequest(const String& path, JsonDocument& response, JsonDocument* paylo
   HTTPClient http;
   http.setConnectTimeout(500); http.setTimeout(500);
   if(!http.begin(tls,String(STRIDE_BASE_URL)+path)) return false;
-  http.addHeader("Authorization",String("Bearer ")+STRIDE_DEVICE_TOKEN);
+  http.addHeader("X-Device-Token",STRIDE_DEVICE_TOKEN);
   int code;
   if(payload) {
     String body; serializeJson(*payload,body);
@@ -51,12 +47,11 @@ bool jsonRequest(const String& path, JsonDocument& response, JsonDocument* paylo
   lastHttpCode=code;
   bool ok=code>=200 && code<300;
   if(ok) {
-    // Bound parsing memory; do not retain arbitrary response bodies.
-    String body;
+    // Require bounded Content-Length; chunked/unknown-length responses fail closed.
     int len=http.getSize();
     if(len<0 || len>4096) ok=false;
     else {
-      body.reserve(len);
+      String body; body.reserve(len);
       uint32_t began=millis();
       while(body.length()<(size_t)len && millis()-began<500) {
         int c=tls.read(); if(c>=0) body+=(char)c; else delay(1);
@@ -68,70 +63,74 @@ bool jsonRequest(const String& path, JsonDocument& response, JsonDocument* paylo
   return ok;
 }
 
+bool reportAck(const char* id,const char* status) {
+  JsonDocument ack,receipt;
+  ack["device_id"]=STRIDE_DEVICE_ID; ack["command_id"]=id; ack["status"]=status;
+  return jsonRequest(String("/devices/")+STRIDE_DEVICE_ID+"/ack",receipt,&ack);
+}
+
+void discardRemote() {
+  RemoteCue cancel{}; cancel.pattern=stride::Pattern::None;
+  xQueueOverwrite(commandQueue,&cancel);
+}
+
 void networkTask(void*) {
   if(!STRIDE_NETWORK_CONFIGURED || !String(STRIDE_BASE_URL).startsWith("https://") || !strlen(STRIDE_ROOT_CA)) vTaskDelete(nullptr);
   WiFi.mode(WIFI_STA); WiFi.begin(STRIDE_WIFI_SSID,STRIDE_WIFI_PASSWORD);
   configTime(0,0,"pool.ntp.org","time.nist.gov");
-  uint32_t seq=0,lastPoll=0,lastReconnect=0;
-  String generation,lastCommand;
+  uint64_t seq=0,uptime=0; uint32_t lastMillis=millis(),lastPoll=0,lastReconnect=0;
+  String lastCommand;
   DeviceAck pendingAck{}; bool hasAck=false;
   for(;;) {
+    uint32_t now=millis(); uptime+=(uint32_t)(now-lastMillis); lastMillis=now;
     if(WiFi.status()!=WL_CONNECTED) {
       healthyAt=0;
-      if(millis()-lastReconnect>3000) { WiFi.reconnect(); lastReconnect=millis(); }
-      vTaskDelay(pdMS_TO_TICKS(200)); continue;
+      if(now-lastReconnect>3000) { WiFi.reconnect(); lastReconnect=now; }
+      vTaskDelay(pdMS_TO_TICKS(100)); continue;
     }
     SensorSnapshot snapshot;
     portENTER_CRITICAL(&snapshotLock); snapshot=sensorSnapshot; portEXIT_CRITICAL(&snapshotLock);
     JsonDocument telemetry,response;
-    telemetry["session_id"]=STRIDE_SESSION_ID; telemetry["device_id"]=STRIDE_DEVICE_ID;
-    telemetry["boot_id"]=bootId; telemetry["sequence"]=++seq; telemetry["uptime_ms"]=millis();
-    telemetry["valid"]=snapshot.valid;
+    telemetry["device_id"]=STRIDE_DEVICE_ID; telemetry["boot_id"]=bootId;
+    telemetry["sequence"]=++seq; telemetry["uptime_ms"]=uptime;
+    telemetry["measurement_valid"]=snapshot.valid; telemetry["source"]="real";
     if(snapshot.valid) telemetry["distance_cm"]=snapshot.cm; else telemetry["distance_cm"]=nullptr;
-    telemetry["local_alert"]=snapshot.band==stride::Band::Stop?"urgent":snapshot.band==stride::Band::Unknown?"sensor_fault":snapshot.band==stride::Band::Clear?"none":"warning";
-    if(snapshot.active[0]) telemetry["active_command_id"]=snapshot.active; else telemetry["active_command_id"]=nullptr;
-    if(!jsonRequest("/telemetry",response,&telemetry)) { healthyAt=0; vTaskDelay(pdMS_TO_TICKS(200)); continue; }
-    const char* current=response["generation"] | "";
-    if(!strlen(current)) current=response["command_generation"] | "";
-    if(!strlen(current) || strlen(current)>64) { healthyAt=0; continue; }
-    if(generation!=current) {
-      generation=current; lastCommand=""; hasAck=false;
-      DeviceAck retired{}; while(xQueueReceive(ackQueue,&retired,0)==pdTRUE) {}
-      RemoteCue cancel{}; cancel.pattern=stride::Pattern::None;
-      strlcpy(cancel.generation,current,sizeof(cancel.generation));
-      xQueueOverwrite(commandQueue,&cancel);
+    if(!jsonRequest("/telemetry",response,&telemetry)) {
+      healthyAt=0; discardRemote(); vTaskDelay(pdMS_TO_TICKS(100)); continue;
     }
     healthyAt=millis();
-    if(!hasAck) hasAck=xQueueReceive(ackQueue,&pendingAck,0)==pdTRUE;
-    if(hasAck && generation!=pendingAck.generation) hasAck=false;
-    if(hasAck) {
-      JsonDocument ack,receipt;
-      ack["session_id"]=STRIDE_SESSION_ID; ack["boot_id"]=bootId;
-      ack["command_id"]=pendingAck.id; ack["generation"]=pendingAck.generation; ack["status"]=pendingAck.status;
-      if(jsonRequest(String("/devices/")+STRIDE_DEVICE_ID+"/ack",receipt,&ack)) hasAck=false;
-      else { healthyAt=0; if(lastHttpCode>=400 && lastHttpCode<500 && lastHttpCode!=429) hasAck=false; }
+    const char* nav=response["navigation_state"] | "";
+    if(strcmp(nav,"guiding")) discardRemote();
+    // Drain terminal ACKs in order. A lost ACK is retried, never re-executed.
+    for(int n=0;n<4;n++) {
+      if(!hasAck) hasAck=xQueueReceive(ackQueue,&pendingAck,0)==pdTRUE;
+      if(!hasAck) break;
+      if(reportAck(pendingAck.id,pendingAck.status)) hasAck=false;
+      else {
+        if(lastHttpCode>=400 && lastHttpCode<500 && lastHttpCode!=429) hasAck=false;
+        else healthyAt=0;
+        break;
+      }
     }
-    if(millis()-lastPoll>=500) {
+    if(millis()-lastPoll>=100) {
       lastPoll=millis(); uint32_t began=millis();
       JsonDocument commands;
-      bool ok=jsonRequest(String("/devices/")+STRIDE_DEVICE_ID+"/commands?session_id="+STRIDE_SESSION_ID+"&boot_id="+bootId,commands);
-      if(!ok) healthyAt=0;
+      bool ok=jsonRequest(String("/devices/")+STRIDE_DEVICE_ID+"/commands",commands);
+      if(!ok) { healthyAt=0; discardRemote(); }
       else if(!commands["command"].isNull()) {
-        JsonObject c=commands["command"];
-        const char* id=c["command_id"] | "";
-        const char* gen=c["generation"] | "";
-        const char* sid=c["session_id"] | "";
-        const char* bid=c["device_boot_id"] | "";
-        const char* p=c["pattern"] | "";
-        if(strlen(id)>0 && strlen(id)<=64 && generation==gen && String(sid)==STRIDE_SESSION_ID && String(bid)==bootId && lastCommand!=id) {
-          RemoteCue cue{};
-          strlcpy(cue.id,id,sizeof(cue.id)); strlcpy(cue.generation,gen,sizeof(cue.generation));
-          cue.pattern=!strcmp(p,"left")?stride::Pattern::Left:!strcmp(p,"right")?stride::Pattern::Right:!strcmp(p,"straight")?stride::Pattern::Straight:!strcmp(p,"stop")?stride::Pattern::Stop:stride::Pattern::None;
-          cue.ttl=c["remaining_ttl_ms"] | 0u; cue.elapsed=millis()-began; cue.received=millis();
-          xQueueOverwrite(commandQueue,&cue); lastCommand=id;
+        RemoteCue cue{};
+        if(decodePhase4Command(commands["command"].as<JsonObjectConst>(),
+                              STRIDE_DEVICE_ID,STRIDE_SESSION_ID,bootId.c_str(),cue) && lastCommand!=cue.id) {
+          lastCommand=cue.id; // A lost received ACK must never cause re-execution.
+          if(cue.ttl<=millis()-began) { reportAck(cue.id,"expired"); continue; }
+          // Backend rechecks revision, expiry and sensor state before execution.
+          if(!reportAck(cue.id,"received")) { healthyAt=0; discardRemote(); continue; }
+          cue.elapsed=millis()-began; cue.received=millis();
+          // RTT includes the receipt ACK. Local loop checks TTL and sensor again.
+          xQueueOverwrite(commandQueue,&cue);
         }
       }
     }
-    vTaskDelay(pdMS_TO_TICKS(200));
+    vTaskDelay(pdMS_TO_TICKS(100));
   }
 }

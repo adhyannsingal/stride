@@ -1,4 +1,6 @@
-# Current delivery: Phase 3, webcam preview and hardware pending
+# Phase 3 delivery: webcam preview and hardware pending
+
+> Updated by [Phase 4 integration](phase4-integration.md). Device telemetry/commands below were pending at this earlier checkpoint.
 
 2026-10-24. User confirmed the live box window works and hardware has not arrived.
 This updates the older Phase 2 plan; it is not a new four-hour countdown.
