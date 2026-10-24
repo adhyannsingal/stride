@@ -19,3 +19,18 @@ recordings/
 .DS_Store
 data/
 *.sqlite3-*
+
+# Internal coordination archives stay outside the public project.
+/Agent_*.md
+/Stride_Agent_Start_Here.md
+/Stride_Live_Vision_Requirements.md
+/buildspec_stride.md
+/Stride_Team_Handoff.zip
+/Stride_Team_Handoff/
+/handoff/
+/contracts/
+**/AGENTS.md
+**/CLAUDE.md
+/frontend/guidelines/
+/qa/agent3-*.json
+/qa/RESULTS.md

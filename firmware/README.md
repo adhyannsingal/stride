@@ -1,4 +1,4 @@
-# Agent 3 firmware
+# ESP32 firmware
 
 Current source is compiled against Arduino-ESP32 **3.3.2**, ArduinoJson **7.4.2**.
 Arduino CLI used: 1.5.2-rc.1. No hardware was flashed or physically validated.
@@ -24,6 +24,8 @@ session is `/tmp/stride-arduino/arduino-cli`. check.sh compiles DevKit with
 W11 flash/PSRAM/USB/FQBN options remain unknown until vendor evidence is supplied.
 No guessed board configuration was used to obtain the syntax-only result.
 
+See the [hardware and wiring guide](../docs/hardware.md) before connecting components.
+
 ## Private configuration
 
 Copy each `secrets.example.h` to ignored `secrets.h`. Supply Wi-Fi SSID/password,
@@ -32,7 +34,7 @@ HTTPS origin, session/device IDs, device-role token, PEM root CA and set
 feedback works without network config. Camera uploads stay disabled without it.
 TLS verifies CA and NTP time; no `setInsecure` workaround exists.
 
-Agent 1 must ensure the shared .gitignore includes firmware/**/secrets.h,
+The repository .gitignore excludes firmware/**/secrets.h,
 firmware/**/board_config.h, models/*.pt, models/*.onnx and private captures.
 
 ## DevKit

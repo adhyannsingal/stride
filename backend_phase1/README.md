@@ -93,7 +93,7 @@ stricter, never greater than 1,000 ms. This bounds time since server receipt;
 end-to-end capture age cannot be verified until clock offset/RTT alignment is
 implemented. A camera/source switch must increment `source_revision`.
 
-## Detector handoff
+## Detector interface
 
 Implement the protocol in `stride_backend/detector.py`:
 
@@ -134,7 +134,7 @@ newer frames wait. `store.latest_detections(session_id)` returns a fresh batch
 or `None`; reading it also enforces expiry. There is no model loader, fake live
 output, automatic worker, or public detection endpoint in this milestone.
 
-## Verification and coordination
+## Verification
 
 Verification result: **58 passed** on Python 3.13; `pip check` reports no broken
 requirements. Starlette emits one upstream deprecation warning about its httpx
@@ -146,15 +146,5 @@ startup but both TCP and Unix socket binding were denied by the environment.
 The in-process HTTP tests pass; a socket-level smoke test must run in an
 unrestricted local terminal or the chosen host before deployment is claimed.
 
-The updated documents were absent locally, so their current remote `main`
-versions were read: [agent brief](https://github.com/adhyannsingal/stride/blob/main/Stride_Agent_Start_Here.md),
-[live vision requirements](https://github.com/adhyannsingal/stride/blob/main/Stride_Live_Vision_Requirements.md),
-and [hardware guide](https://github.com/adhyannsingal/stride/blob/main/Stride_Hardware_Wiring_Guide.md).
-The explicit backend milestone controls ownership/scope over the brief's
-different assignment for a vision integration agent.
-
-Coordinate token provisioning, session/source selection, the detector worker,
-and the future `/vision` control/result endpoints with teammates. Phone cookie
-auth/CORS, clock alignment, and hosting deployment remain later work. This
-milestone adds no frontend, firmware, YOLO implementation, database, telemetry,
+This milestone adds no frontend, firmware, YOLO implementation, database, telemetry,
 or route guidance. Hosted live rate/latency and real hardware are not validated.

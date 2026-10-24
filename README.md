@@ -182,7 +182,7 @@ For iPhone access, `127.0.0.1` refers to the phone itself. A reachable, correctl
 
 ### 3. Add ultrasonic sensing and voice
 
-Follow the [wiring guide](Stride_Hardware_Wiring_Guide.md) and [deadline bring-up instructions](handoff/thirty-minute-hardware-demo.md) before powering or flashing hardware. Confirm the board and actual USB port.
+Follow the [wiring guide](docs/hardware.md) and [sensor and voice setup](docs/local-demo.md) before powering or flashing hardware. Confirm the board and actual USB port.
 
 ```sh
 uv pip install --python .venv-phase3/bin/python -r scripts/requirements-hardware.txt
@@ -206,7 +206,7 @@ Only one process may own the serial port. This is a Mac-assisted diagnostic; its
 
 ### 4. Use the W11 camera as a local source
 
-A vendor-matched Meshnology W11 camera-only preparation script and HTTP capture adapter are included. Follow [W11 local demo instructions](handoff/w11-local-demo.md) to identify the board, configure private Wi-Fi, build/flash the correct target, and obtain its actual LAN IP.
+A vendor-matched Meshnology W11 camera-only preparation script and HTTP capture adapter are included. Follow [W11 local demo instructions](docs/w11-camera.md) to identify the board, configure private Wi-Fi, build/flash the correct target, and obtain its actual LAN IP.
 
 ```sh
 ./Start_Stride_Demo.command --camera-url http://ACTUAL_CAMERA_LAN_IP/capture
@@ -244,7 +244,7 @@ Use the same working directory/database path as the running backend. Importing n
 
 **Electrical requirements:** HC-SR04 ECHO must pass through a verified voltage divider before GPIO19. A motor must not connect directly to a GPIO or 5 V; it requires a regulated 3 V supply, suitable driver, flyback protection, and common ground. Firmware uses GPIO18 TRIG, GPIO19 divided ECHO, GPIO23 buzzer driver, and GPIO25 motor driver on the separate DevKit. Verify physical pin labels and board identity before connection.
 
-The current motor-only configuration has no distinct unknown-sensor vibration pattern; without a buzzer, an inactive motor is not proof of clear space. Full circuits, power guidance, and staged sensor/buzzer/motor checks are in the [hardware wiring guide](Stride_Hardware_Wiring_Guide.md) and [firmware README](firmware/README.md).
+The current motor-only configuration has no distinct unknown-sensor vibration pattern; without a buzzer, an inactive motor is not proof of clear space. Full circuits, power guidance, and staged sensor/buzzer/motor checks are in the [hardware wiring guide](docs/hardware.md) and [firmware README](firmware/README.md).
 
 ## Technology stack
 
@@ -331,8 +331,7 @@ firmware/camera/        Original gated W11 uploader; hosted compatibility pendin
 models/manifest.json    Labels, preprocessing, provenance, and model checksums
 scripts/                Preview, W11 preparation, model export, diagnostics, imports
 qa/                     Measurements, compile records, evaluation and QA reports
-handoff/                Detailed integration contracts and bring-up instructions
-contracts/              Original design contracts; consult executable API for changes
+docs/                   Hardware, local demonstration, and W11 setup guides
 web/                    Earlier frontend scaffold; frontend/ is the primary app
 backend_phase1/, backend_phase2/  Historical backend milestones
 ```

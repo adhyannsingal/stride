@@ -1,6 +1,6 @@
 # Meshnology W11 — camera-only local demo
 
-The user's exact ASIN is B0GTQMX5HB, listed as Meshnology W11 with OV3660. Its official W11 documentation specifies the XIAO_ESP32S3 Arduino target. Vendor source/schematic, not the partial FCC ID, establishes this software profile. Physical board, camera sensor/revision, orientation and actual operation still require validation.
+The supported camera profile is Meshnology W11 with OV3660 (ASIN B0GTQMX5HB). Its official W11 documentation specifies the XIAO_ESP32S3 Arduino target. Vendor source/schematic, not the partial FCC ID, establishes this software profile. Physical board, camera sensor/revision, orientation and actual operation still require validation.
 
 Sources:
 - https://www.amazon.com/dp/B0GTQMX5HB
@@ -16,7 +16,7 @@ Documented pins: D0–D7 = 15,17,18,16,14,12,11,48; XCLK=10; SDA=40; SCL=39; VSY
 
 ## 1. Identify ports before flashing
 
-At the latest check only `/dev/cu.usbserial-0001` appeared. USB registry identifies CP2102 and esptool recognizes ESP32, consistent with the DevKit, although the chip read ends early. No second USB device/native ESP32-S3 serial port is detected. This is not evidence that the W11 is ready to flash. Check a known USB data cable/direct port; use a labeled BOOT button while connecting if necessary. Do not install arbitrary USB drivers or guess a port.
+Enumerate USB ports with `arduino-cli board list`. Identify the DevKit and W11 separately; a CP210x bridge alone does not identify the W11. Check a known USB data cable/direct port; use a labeled BOOT button while connecting if necessary. Do not install arbitrary USB drivers or guess a port.
 
 Keep the two targets separate: DevKit uses esp32:esp32:esp32; vendor W11 uses esp32:esp32:XIAO_ESP32S3 with OPI PSRAM. Only flash the positively identified matching board. USB LED indicates power only.
 
@@ -25,14 +25,13 @@ Keep the two targets separate: DevKit uses esp32:esp32:esp32; vendor W11 uses es
 Prepared on this machine:
 
 ```sh
-cd /Users/adhyannsingal/Documents/Codex/2026-10-22/referenced-chatgpt-conversation-this-is-an/stride
-/tmp/stride-phase2-venv/bin/python scripts/prepare_w11_demo.py
+.venv-phase3/bin/python scripts/prepare_w11_demo.py
 ```
 
 Edit only the SSID/password values in `/tmp/stride-w11-camera/CameraWebServer/secrets.h`. Use a private 2.4 GHz-capable demo network reachable by the Mac; venue guest isolation can block the Mac-to-camera connection. Keep credentials private. The camera serves images on the LAN. Re-running preparation preserves the private credentials file.
 
 ```sh
-/tmp/stride-arduino/arduino-cli compile --fqbn esp32:esp32:XIAO_ESP32S3:PSRAM=opi --build-path /tmp/stride-w11-camera-build /tmp/stride-w11-camera/CameraWebServer
+arduino-cli compile --fqbn esp32:esp32:XIAO_ESP32S3:PSRAM=opi --build-path /tmp/stride-w11-camera-build /tmp/stride-w11-camera/CameraWebServer
 ```
 
 This exact target compiled with Arduino-ESP32 3.3.2 after the frame-age header change: 1,002,487 bytes program, 66,720 bytes globals. Compile only; not flashed/physically tested. Compile again after editing WiFi values. It uses the board target's default partition settings; don't independently force another model/PSRAM mode or flash offset.
@@ -40,8 +39,8 @@ This exact target compiled with Arduino-ESP32 3.3.2 after the frame-age header c
 Once W11's actual matching USB port is identified:
 
 ```sh
-/tmp/stride-arduino/arduino-cli upload --fqbn esp32:esp32:XIAO_ESP32S3:PSRAM=opi --port ACTUAL_W11_USB_PORT --input-dir /tmp/stride-w11-camera-build /tmp/stride-w11-camera/CameraWebServer
-/tmp/stride-arduino/arduino-cli monitor --port ACTUAL_W11_USB_PORT --config baudrate=115200
+arduino-cli upload --fqbn esp32:esp32:XIAO_ESP32S3:PSRAM=opi --port ACTUAL_W11_USB_PORT --input-dir /tmp/stride-w11-camera-build /tmp/stride-w11-camera/CameraWebServer
+arduino-cli monitor --port ACTUAL_W11_USB_PORT --config baudrate=115200
 ```
 
 Look for camera initialization and `Camera Ready! Use http://...`. Use the actual printed IP. If initialization fails, preserve the code/error and inspect the supplied ribbon/expansion/PSRAM/board match; do not try random GPIO maps. If USB monitor appears silent, re-enumerate its port after boot and use the board's reset button. No success is claimed until real frames appear.

@@ -1,4 +1,4 @@
-"""Bounded continuous inference. Canonical auth/ingest/events belong to Agent 1."""
+"""Bounded continuous inference; authentication, ingestion and final events live in the backend."""
 import asyncio
 import copy
 import time

@@ -33,7 +33,7 @@ if ! "$stride_python" -c 'import cv2, numpy, onnxruntime, PIL'; then
     exit 1
 fi
 if [ ! -f "$stride_root/models/yolov8n.onnx" ]; then
-    echo "Model missing: models/yolov8n.onnx. Follow handoff/backend-vision-integration.md model export/setup."
+    echo "Model missing: models/yolov8n.onnx. Follow README.md model export/setup."
     exit 1
 fi
 echo "Stride local object-awareness demo"

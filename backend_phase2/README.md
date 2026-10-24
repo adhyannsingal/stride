@@ -1,16 +1,9 @@
 # STRIDE backend — Phase 2
 
-**Merged backend/vision setup:** the real detector plugin is now
-`app.vision.phase2:build_detector`. Start from the repository root using the
-[combined instructions](../handoff/backend-vision-integration.md) or
-[root README](../README.md). They install the serving-only vision dependencies
-and keep both repository root and backend_phase2 on PYTHONPATH. The standalone
-instructions below can still run without a detector; they do not load a model
-merely by starting this backend.
-
-FastAPI frame ingestion and continuous inference orchestration. The YOLO model,
-tracking, UI/audio and firmware are supplied by teammates. No model or fake
-provider is bundled. One process and **one Uvicorn worker/replica** are required.
+**Historical milestone:** use [the root README](../README.md#quick-start) and
+`backend_phase3/` for the current integrated application. The instructions below
+describe the Phase 2 snapshot; never combine multiple `stride_backend` package
+directories on `PYTHONPATH`.
 
 ## Start and test
 
@@ -294,10 +287,5 @@ Real YOLO integration, sustained 5 fresh results/s, capture-to-result p95 <=500 
 hosted phone operation and physical W11/AirPods tests remain unverified. Choose a
 host, provision session/camera secrets and exact UI origins, register the real
 adapter, and run those gates. Single-process in-memory state is not shared across
-workers or replicas. In this agent environment socket binding was denied during
+workers or replicas. In the original test environment socket binding was denied during
 Phase 1; run the documented command in a normal terminal for a network smoke test.
-
-The root README is an older snapshot design. Updated requirements were read from
-remote copies of [agent brief](https://github.com/adhyannsingal/stride/blob/main/Stride_Agent_Start_Here.md)
-and [live vision requirements](https://github.com/adhyannsingal/stride/blob/main/Stride_Live_Vision_Requirements.md),
-which override it. Only backend-owned files are changed.

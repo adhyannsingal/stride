@@ -1,6 +1,6 @@
 // STRIDE frontend — camera capture loop.
 //
-// Rules from the Agent 2 brief + live vision requirements:
+// Capture lifecycle requirements:
 //  * NEVER call getUserMedia on load. Only after the explicit
 //    "Use this device's camera" gesture (producer selection).
 //  * Prefer rear camera (facingMode {ideal:'environment'}); allow device

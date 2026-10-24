@@ -1,10 +1,10 @@
-# Stride hardware wiring guide
+# Hardware and wiring
 
 **Build:** navigation assistance glasses; W11 ESP32-S3/OV3660 camera plus a separate ESP32 DevKit V1 for sensing and feedback.
 
 **Confirmed equipment:** MacBook Air M4, standard iPhone 14, AirPods Pro 3 and a simple 3 V vibration motor. Verify actual component availability at sprint kickoff; earlier delivery estimates are not proof the parts are on hand.
 
-Use the three current agent briefs for ownership and integration; `buildspec_stride.md` is the team index. This guide controls electrical connections and supersedes the earlier 5 V vibration-motor suggestion. **Your motor is rated 3 V.** Use the sensor board's GPIO labels, not physical header positions; DevKit clones vary. The W11 camera pin map remains unverified.
+Use the sensor board's GPIO labels, not physical header positions; DevKit clones vary. The motor is rated 3 V and requires a protected driver and regulated supply. Verify the exact W11 revision and vendor profile before flashing.
 
 ## 1. What goes where
 
@@ -137,7 +137,7 @@ These are initial patterns to test with users, not a validated vocabulary. A sin
 
 ## 7. W11 camera wiring gate
 
-No external sensor/motor GPIOs are needed on the W11. Power via its verified USB input and keep the supplied camera ribbon installed correctly. Before flashing, Agent 3 / Adhyann must record:
+No external sensor/motor GPIOs are needed on the W11. Power via its verified USB input and keep the supplied camera ribbon installed correctly. Before flashing, record:
 
 | Item | Required verification |
 | --- | --- |
@@ -148,19 +148,19 @@ No external sensor/motor GPIOs are needed on the W11. Power via its verified USB
 
 **Do not substitute AI Thinker pin definitions or invent a W11 map.** Use a matching seller example first. Start with 640 × 480 JPEG and pass 20 captures without resets. Share the board markings/schematic when it arrives so the remaining board-specific pin configuration can be finalized.
 
-## 8. Integration sequence and owners
+## 8. Integration sequence
 
-1. **Agent 3 / Adhyann:** W11 identification, USB power and camera-only example.
-2. **Agent 3 / Adhyann:** DevKit rails, divider and sensor-only ranging; no motors yet.
-3. **Agent 3 / Adhyann:** buzzer driver, then one motor, then second motor. Check rails after each addition.
-4. **Agent 3 / Adhyann:** common enclosure, harness and mounting; inspect all wiring unpowered.
-5. **Agent 1 (backend) + Agent 2 (frontend):** bind real devices, select W11 and verify telemetry/command/ACK/speech while Agent 3 handles hardware.
-6. **Agent 3 / Adhyann:** verify alert timing is nonblocking, old commands cannot replay and remote direction cues cancel on link loss. Local obstacle buzzer/motor alerts remain active without the backend.
-7. **All:** 15-minute powered run, disconnect/reconnect tests, 10 approaches to staged flat targets and direction-pattern checks. No unsupervised navigation trials.
+1. W11 identification, USB power and camera-only example.
+2. DevKit rails, divider and sensor-only ranging; no motors yet.
+3. buzzer driver, then one motor, then second motor. Check rails after each addition.
+4. common enclosure, harness and mounting; inspect all wiring unpowered.
+5. Bind real devices, select W11 and verify telemetry, commands, acknowledgments and speech alongside hardware checks.
+6. verify alert timing is nonblocking, old commands cannot replay and remote direction cues cancel on link loss. Local obstacle buzzer/motor alerts remain active without the backend.
+7. 15-minute powered run, disconnect/reconnect tests, 10 approaches to staged flat targets and direction-pattern checks. No unsupervised navigation trials.
 
 ## 9. AirPods connections
 
-AirPods connect by Bluetooth to the Mac tonight and to the iPhone when using the phone UI/native app. They do not require ESP32 audio wiring. Keep spoken guidance and buzzer audible together. Use Transparency mode and a modest volume for supervised tests.
+AirPods connect by Bluetooth to the Mac for the local demo and to the iPhone when using the phone web app. They do not require ESP32 audio wiring. Keep spoken guidance and buzzer audible together. Use Transparency mode and a modest volume for supervised tests.
 
 The standard iPhone 14 has no rear LiDAR. AirPods Pro 3 support head-tracked Spatial Audio, but native headphone-motion access, app coordinates and calibration still need testing. Ordinary spoken instructions are included; room-anchored object sound is an extension to prove.
 

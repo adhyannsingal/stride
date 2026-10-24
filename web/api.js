@@ -1,13 +1,13 @@
 // STRIDE frontend — single API adapter.
 //
 // Every backend call in the app goes through this module so that fixtures and
-// the real backend share one code path (Agent 2 brief rule). Fixtures are an
+// the real backend share one code path. Fixtures are an
 // explicit, selectable development mode — NEVER a silent fallback after a real
 // API error. If the real backend errors, the error surfaces; we do not quietly
 // serve a fixture in its place.
 //
-// Field names, endpoints and shapes follow contracts/API.md and
-// contracts/examples.json. Agent 1 owns the contract; propose changes rather
+// This historical scaffold follows the original API examples.
+// Coordinate interface changes rather
 // than renaming here.
 
 import { Fixtures } from "./fixtures.js";

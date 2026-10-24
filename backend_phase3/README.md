@@ -296,6 +296,6 @@ separate measurement gates; no throughput is claimed from test doubles.
 
 Use persistent local storage on the chosen host; do not run multiple replicas
 with the in-memory Phase 2 controller. Back up route history as appropriate.
-In this agent environment socket binding is restricted; in-process HTTP tests
+In the original test environment socket binding is restricted; in-process HTTP tests
 exercise startup, SQLite and endpoints. Run the launch command in a normal
 terminal for the network smoke test. Raw images and credentials are never stored.

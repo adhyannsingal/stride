@@ -1,4 +1,4 @@
-"""Diagnostic webcam encoding; browser capture remains Agent 2's responsibility."""
+"""Diagnostic webcam encoding; browser capture is implemented in the web app."""
 import cv2
 import numpy as np
 

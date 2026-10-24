@@ -38,22 +38,6 @@ mapped to a different class. Camera boxes are not metric range or free space.
 
 Reference: [Ultralytics metrics guidance](https://docs.ultralytics.com/guides/yolo-performance-metrics/).
 
-## Ordered delivery plan and ownership
-
-| Priority | Work | Owner | Actual evidence needed |
-| --- | --- | --- | --- |
-| 1 | Reviewed accuracy set, confidence/resolution/tracking tuning | Agent 3 + human review | Per-class false positives/misses on held-out scenes; preserve live performance |
-| 2 | Verified remote capture time, producer binding, centralized stop/fault/route/observation priority | Agent 1 with Agent 3 integration checks | Real backend invalidates old source; stale/unknown data cannot produce current-scene speech |
-| 3 | Actual backend-compatible phone viewer/audio flow and hosted HTTPS | Agent 2 frontend, Agent 1 hosting, Agent 3 measurement | Real iPhone/AirPods tests; source ownership; interruption/dedup; Mac app server stopped |
-| 4 | Components arrive: sensor-only, buzzer, protected 3 V motor, W11 board identification | Human Adhyann + Agent 3 source/log support | Physical rails/divider, range calibration, pulse/offline checks and verified board facts |
-| 5 | Device server APIs + firmware protocol convergence | Agent 1 server, Agent 3 firmware | Current raw-JPEG/camera-state firmware versus Phase 2 multipart gap resolved; command TTL/ACK/stop tested |
-| 6 | Controlled checked-route end-to-end demo | All owners with sighted spotter | Manually confirmed route directions, actual local alerts, fresh object awareness, recorded misses |
-
-Do not wait for all perception work before Agent 1/2 implement their owned seams.
-This table is a handoff, not a claim that messages were sent or others completed
-those items. User says hardware is expected in about two hours; no hardware
-measurements/flash were performed here and no new six-hour clock was assumed.
-
 ## Limits that threshold tuning cannot solve
 
 YOLO's fixed labels do not establish universal hazard coverage. Single forward

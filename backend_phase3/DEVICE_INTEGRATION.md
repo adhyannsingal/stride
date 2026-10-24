@@ -1,4 +1,4 @@
-# STRIDE Phase 4 — controller and frontend handoff
+# Controller API and frontend integration
 
 The Phase 4 application remains in **backend_phase3/**. One FastAPI process and
 one Uvicorn worker/replica are required. These APIs are supplemental monitoring

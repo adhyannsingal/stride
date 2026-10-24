@@ -1,4 +1,4 @@
-// Behavioral tests of Agent 2's actual speech controller, with mocked audio.
+// Behavioral tests of the speech controller, with mocked audio.
 // STRIDE_SPEECH_MODULE selects a checkout/copy; this never proves audible output.
 import { test } from 'node:test'
 import assert from 'node:assert/strict'

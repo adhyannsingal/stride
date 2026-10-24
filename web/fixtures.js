@@ -5,7 +5,7 @@
 // never because a real API call failed. On a real-mode error the adapter throws
 // and the UI shows the error; it does not quietly swap in a fixture.
 //
-// Every shape here mirrors contracts/API.md / contracts/examples.json so the UI
+// Shapes reflect the original API scaffold so the UI
 // renders identically against fixtures and the real backend.
 
 const DEMO_ROUTE_ID = "00000000-0000-4000-8000-000000000050";

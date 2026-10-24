@@ -1,6 +1,6 @@
 # Webcam tuning and fault-test follow-up
 
-Branch: stride/hardware-vision. Based on Agent 3's existing model/service.
+Measurement scope: local vision model and service.
 No physical hardware work was performed; parts are expected later per the human.
 Model SHA256: `cbbde35333c4e002b9df32c16be0a7d43166fde7b86fd282a82dc7baaedb15c5`. CPU runtime on the local MacBook Air M4.
 
