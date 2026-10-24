@@ -1,0 +1,4 @@
+# Phase 2 serving stack plus the Agent 3 CPU detector; no export/training tools.
+-r requirements.txt
+numpy==2.4.6
+onnxruntime==1.31.0

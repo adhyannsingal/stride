@@ -1,0 +1,3 @@
+-r requirements-vision.txt
+-r requirements-dev.txt
+opencv-python==5.0.0.93

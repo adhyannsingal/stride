@@ -1,5 +1,13 @@
 # STRIDE backend — Phase 2
 
+**Merged backend/vision setup:** the real detector plugin is now
+`app.vision.phase2:build_detector`. Start from the repository root using the
+[combined instructions](../handoff/backend-vision-integration.md) or
+[root README](../README.md). They install the serving-only vision dependencies
+and keep both repository root and backend_phase2 on PYTHONPATH. The standalone
+instructions below can still run without a detector; they do not load a model
+merely by starting this backend.
+
 FastAPI frame ingestion and continuous inference orchestration. The YOLO model,
 tracking, UI/audio and firmware are supplied by teammates. No model or fake
 provider is bundled. One process and **one Uvicorn worker/replica** are required.
@@ -10,11 +18,11 @@ Python 3.11+, tested with Python 3.13. Existing `.venv` remains usable; no new
 third-party dependencies were added in Phase 2.
 
 ```sh
-cd ~/Desktop/LeHacks/stride/backend
+cd backend_phase2  # from repository root
 python3 -m venv .venv
 source .venv/bin/activate
 python -m pip install -r requirements-dev.txt
-cp .env.example .env
+# Configure STRIDE_* environment values privately; no .env.example is bundled.
 ```
 
 For local development only:

@@ -2,7 +2,25 @@
 
 AI-powered navigation assistance glasses for blind and low-vision users: checked-route guidance, immediate obstacle alerts, continuous objects-ahead awareness, AirPods speech and directional vibration. Object finding and last-seen recall support the navigation experience.
 
-**Status:** implementation handoff. At the reviewed branch snapshots the repository contained planning documents, not an executable application. Run commands, deployment and physical operation must be delivered and verified by the agents; no completed feature is implied here.
+**Status:** backend Phase 1 and Phase 2 are merged with the Agent 3 vision/firmware work. Phase 2 can run the real YOLO detector through its authenticated upload and continuous inference worker. See [combined setup and API compatibility](handoff/backend-vision-integration.md). Hosted frontend/audio, routes/device policy and physical hardware integration remain incomplete.
+
+## Run the combined backend locally
+
+From the repository root (Python 3.11):
+
+```sh
+uv venv --python 3.11 .venv-phase2
+uv pip install --python .venv-phase2/bin/python -r backend_phase2/requirements-vision-dev.txt
+# Requires generated models/yolov8n.onnx + matching models/manifest.json.
+# Model export/setup is documented in handoff/backend-vision-integration.md.
+PYTHONPATH=.:backend_phase2 STRIDE_LOCAL_DEV=true STRIDE_DETECTOR_FACTORY=app.vision.phase2:build_detector .venv-phase2/bin/python -m uvicorn stride_backend.main:create_app --factory --host 127.0.0.1 --port 8000 --workers 1
+```
+
+Open `http://127.0.0.1:8000/docs`. Local development mode is for loopback testing;
+provision the backend's session/device secrets and HTTPS before hosting. Phase 2
+uses multipart `/frame`, `/auth/session`, `/time.server_ms` and object `bbox`;
+these differences from the planned shared contract are documented in the handoff.
+There is one backend worker/controller; the YOLO plugin does not add a second one.
 
 ## Team assignments
 

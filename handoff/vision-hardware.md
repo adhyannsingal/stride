@@ -182,3 +182,13 @@ was reproduced and fixed; the same session now retains one inference worker acro
 rebinds. All seven measured local fault scenarios and 22 Python tests pass. This
 is independent of Agent 1's hosted app and does not claim phone/network/hardware
 validation. Use scripts/measure_faults.py to reproduce; no raw frames are saved.
+
+## Backend Phase 2 merged integration
+
+The actual backend now exists on main alongside vision. Use
+[backend-vision-integration.md](backend-vision-integration.md) for the current
+plugin, pinned serving stack, actual Phase 2 compatibility map and run commands.
+The combined runtime uses app.vision.phase2:build_detector with Phase 2's existing
+worker/controller, not the earlier requested VisionAPI bridge or a second router.
+Actual authenticated loopback HTTP webcam proof is recorded in
+qa/phase2-webcam-http.json. Remote clock/audio/device/deployment gates remain.
