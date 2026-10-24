@@ -1,0 +1,14 @@
+{
+  "title": "STRIDE",
+  "description": "STRIDE helps blind and low-vision users access spoken route guidance, nearby obstacle alerts, and recent object sightings through a wearable navigation prototype.",
+  "icons": {
+    "icon": "/icon.svg"
+  },
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}

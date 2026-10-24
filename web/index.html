@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>STRIDE</title>
+  <link rel="stylesheet" href="./app.css" />
+</head>
+<body data-role="viewer" data-mode="fixture">
+  <a class="skip" href="#main">Skip to controls</a>
+
+  <header class="topbar">
+    <div class="brand">
+      <h1>STRIDE</h1>
+      <p id="role-label" class="role-label">Viewer / audio</p>
+    </div>
+    <div class="health" aria-live="polite">
+      <span id="mode-badge" class="badge badge-fixture">Fixtures</span>
+      <span id="health-dot" class="dot" title="Backend health"></span>
+      <span id="source-label" class="source-label">source: —</span>
+    </div>
+  </header>
+
+  <main id="main" class="main">
+
+    <!-- Connect -->
+    <section class="card" aria-labelledby="connect-title">
+      <h2 id="connect-title">Connect</h2>
+      <div class="row">
+        <label for="mode-select">Development mode</label>
+        <select id="mode-select" aria-describedby="mode-help">
+          <option value="fixture" selected>Fixtures (local dev)</option>
+          <option value="real">Real backend</option>
+        </select>
+      </div>
+      <p id="mode-help" class="help">Fixtures are an explicit dev mode. On a real-backend error the app shows the error; it never silently serves a fixture.</p>
+      <div class="row">
+        <label for="base-url">Backend base URL</label>
+        <input id="base-url" type="url" inputmode="url" placeholder="(same origin)" autocomplete="off" />
+      </div>
+      <div class="row">
+        <label for="access-code">Access code</label>
+        <input id="access-code" type="password" autocomplete="off" />
+      </div>
+      <div class="row">
+        <label for="session-id">Session ID (to join existing)</label>
+        <input id="session-id" type="text" inputmode="text" autocomplete="off" placeholder="create new if blank" />
+      </div>
+      <div class="controls">
+        <button id="btn-connect" class="btn btn-primary btn-lg" type="button">Connect</button>
+      </div>
+      <p id="connect-status" class="status" role="status" aria-live="polite">Not connected.</p>
+    </section>
+
+    <!-- Role -->
+    <section class="card" aria-labelledby="role-title">
+      <h2 id="role-title">This device</h2>
+      <div class="role-pick" role="group" aria-label="Device role">
+        <button id="role-viewer" class="btn" type="button" aria-pressed="true">Viewer / audio</button>
+        <button id="role-camera" class="btn" type="button" aria-pressed="false">Camera source</button>
+      </div>
+      <p class="help">Opening the app defaults to Viewer and never starts a camera. Camera access is requested only after you choose Camera source and tap the button below.</p>
+      <div id="camera-producer" class="controls" hidden>
+        <label for="camera-device" class="sr-only">Camera device</label>
+        <select id="camera-device" aria-label="Camera device"></select>
+        <button id="btn-use-camera" class="btn btn-primary btn-lg" type="button">Use this device's camera</button>
+      </div>
+      <p id="producer-label" class="status" aria-live="polite">No producer selected.</p>
+    </section>
+
+    <!-- Speech -->
+    <section class="card" aria-labelledby="speech-title">
+      <h2 id="speech-title">Speech</h2>
+      <p class="help">Speech defaults OFF, especially on the capture device. Enable it with a tap so iOS/AirPods audio routing is authorized.</p>
+      <div class="controls">
+        <button id="btn-speech" class="btn btn-primary btn-lg" type="button">Enable audio / test speech</button>
+      </div>
+      <p id="speech-status" class="status" aria-live="polite">Speech off.</p>
+    </section>
+
+    <!-- Live view -->
+    <section class="card" aria-labelledby="live-title">
+      <h2 id="live-title">Live view</h2>
+      <div class="stage" id="stage">
+        <video id="video" playsinline muted aria-label="Camera preview"></video>
+        <div class="boxes" id="boxes" aria-hidden="true"></div>
+        <p class="stage-empty" id="stage-empty">No camera on this device.</p>
+      </div>
+      <dl class="metrics">
+        <div><dt>Status</dt><dd id="m-status">—</dd></div>
+        <div><dt>Result rate</dt><dd id="m-hz">—</dd></div>
+        <div><dt>Capture age</dt><dd id="m-age">—</dd></div>
+        <div><dt>Origin</dt><dd id="m-origin">—</dd></div>
+        <div><dt>Dropped</dt><dd id="m-dropped">0</dd></div>
+      </dl>
+      <p class="help">Boxes describe image location, not free walking space. Missing detections never mean a clear path.</p>
+    </section>
+
+    <!-- Guided route -->
+    <section class="card" aria-labelledby="route-title">
+      <h2 id="route-title">Guided route</h2>
+      <div class="row">
+        <label for="route-select">Route</label>
+        <select id="route-select" aria-label="Route"></select>
+      </div>
+      <p id="route-state" class="status" aria-live="polite">Idle.</p>
+      <p id="route-instruction" class="instruction">—</p>
+      <div class="controls route-controls">
+        <button id="btn-start" class="btn btn-primary btn-lg" type="button">Start navigation</button>
+        <button id="btn-confirm" class="btn btn-lg" type="button" disabled>Confirm checkpoint</button>
+        <button id="btn-repeat" class="btn btn-lg" type="button" disabled>Repeat</button>
+        <button id="btn-pause" class="btn btn-lg" type="button" disabled>Pause</button>
+        <button id="btn-resume" class="btn btn-lg" type="button" disabled>Resume</button>
+        <button id="btn-stop" class="btn btn-danger btn-lg" type="button" disabled>Stop</button>
+      </div>
+    </section>
+
+    <!-- Feedback / sensor health -->
+    <section class="card" aria-labelledby="feedback-title">
+      <h2 id="feedback-title">Feedback health</h2>
+      <dl class="metrics">
+        <div><dt>Distance</dt><dd id="f-distance">—</dd></div>
+        <div><dt>Alert</dt><dd id="f-alert">—</dd></div>
+        <div><dt>Sensor</dt><dd id="f-source">—</dd></div>
+        <div><dt>Ack</dt><dd id="f-ack">—</dd></div>
+      </dl>
+      <p class="help">Distance is a separate simulated sensor reading. A UI animation or simulated ack is never a real vibration.</p>
+    </section>
+
+    <!-- Find / recall -->
+    <section class="card" aria-labelledby="find-title">
+      <h2 id="find-title">Find &amp; recall</h2>
+      <div class="row">
+        <label for="find-target">Object</label>
+        <input id="find-target" type="text" maxlength="80" autocomplete="off" placeholder="chair" />
+        <button id="btn-find" class="btn btn-lg" type="button">Find</button>
+      </div>
+      <p id="find-status" class="status" aria-live="polite">—</p>
+      <p class="help">A remembered sighting is not a current object location.</p>
+    </section>
+
+  </main>
+
+  <p class="disclaimer">
+    STRIDE is navigation assistance for a checked route with a sighted spotter. It is not validated for
+    independent blind walking or road crossings. Distance and haptics are simulated until hardware is connected.
+  </p>
+
+  <script type="module" src="./app.js"></script>
+</body>
+</html>
