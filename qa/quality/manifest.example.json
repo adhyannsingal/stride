@@ -1,0 +1,27 @@
+{
+  "note": "Schema example only. Replace paths/boxes with HUMAN-REVIEWED annotations, then set reviewed/complete_for_labels true. This is not measured ground truth.",
+  "labels": ["person", "chair", "cup", "bottle"],
+  "not_covered": ["stairs", "drop-offs", "glass", "walls", "safe free-space", "measured object distance"],
+  "images": [
+    {
+      "id": "tuning-scene-1",
+      "scene_id": "room-a-session-1",
+      "file": "../private/replace-with-reviewed-image.jpg",
+      "split": "tuning",
+      "reviewed": false,
+      "complete_for_labels": false,
+      "conditions": ["replace-with-actual-lighting-motion-and-occlusion"],
+      "objects": [{"label": "chair", "box": [0.1, 0.2, 0.4, 0.9]}]
+    },
+    {
+      "id": "held-out-scene-1",
+      "scene_id": "room-b-session-2",
+      "file": "../private/replace-with-a-different-reviewed-image.jpg",
+      "split": "validation",
+      "reviewed": false,
+      "complete_for_labels": false,
+      "conditions": [],
+      "objects": []
+    }
+  ]
+}
