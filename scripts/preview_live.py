@@ -8,6 +8,7 @@ import cv2
 import numpy as np
 from app.vision.capture import encode_capture
 from app.vision.model import OnnxDetector
+from app.vision.preview_audio import PreviewAudio
 
 
 TITLE='Stride — LIVE webcam detection (local diagnostic)'
@@ -15,13 +16,17 @@ TITLE='Stride — LIVE webcam detection (local diagnostic)'
 
 def preview(args):
     detector=OnnxDetector(args.model,confidence=args.confidence)
+    audio=PreviewAudio() if args.speak else None
     cap=None; paused=False; ticks=deque(maxlen=60); started=time.monotonic(); seen=False; read_failures=0
     cv2.namedWindow(TITLE,cv2.WINDOW_NORMAL)
     cv2.resizeWindow(TITLE,1000,650)
     print('Live window opening. Focus it: Q/Esc quit, P pause/resume, +/- confidence. No frames saved.',flush=True)
+    if audio:
+        print('Local object speech ON via Mac system output. No sensor/route priority or avoidance directions. Select AirPods in macOS.',flush=True)
     try:
         while not args.seconds or time.monotonic()-started<args.seconds:
             began=time.monotonic()
+            if audio: audio.tick()
             if paused:
                 image=np.zeros((480,720,3),dtype=np.uint8)
                 cv2.putText(image,'PAUSED — press P to resume',(20,90),cv2.FONT_HERSHEY_SIMPLEX,.8,(255,255,255),2)
@@ -32,6 +37,7 @@ def preview(args):
                     if not cap.isOpened(): raise RuntimeError('Webcam unavailable; check camera permission and close competing capture apps')
                 ok,raw=cap.read()
                 if not ok:
+                    if audio: audio.stop()
                     read_failures+=1
                     waiting=np.zeros((360,640,3),dtype=np.uint8)
                     cv2.putText(waiting,'Waiting for webcam... close other camera apps',(15,100),cv2.FONT_HERSHEY_SIMPLEX,.6,(255,255,255),1)
@@ -48,6 +54,9 @@ def preview(args):
                 h,w=image.shape[:2]
                 if elapsed>=1000:
                     found=[]
+                if audio:
+                    spoken=audio.update(found,began,valid=not quality['nearly_black'])
+                    if spoken: print('LOCAL OBJECT AUDIO: '+spoken,flush=True)
                 for obj in found:
                     x1,y1,x2,y2=(int(v*d) for v,d in zip(obj.box,(w,h,w,h)))
                     x1,y1=max(0,min(w-1,x1)),max(0,min(h-1,y1))
@@ -76,12 +85,14 @@ def preview(args):
             if key in (27,ord('q'),ord('Q')): break
             if key in (ord('p'),ord('P')):
                 paused=not paused; ticks.clear()
+                if audio: audio.stop()
                 if cap is not None: cap.release(); cap=None
             if key in (ord('+'),ord('=')): detector.confidence=min(.9,round(detector.confidence+.05,2))
             if key==ord('-'): detector.confidence=max(.1,round(detector.confidence-.05,2))
             if cv2.getWindowProperty(TITLE,cv2.WND_PROP_VISIBLE)<1: break
             time.sleep(max(0,1/args.hz-(time.monotonic()-began)))
     finally:
+        if audio: audio.stop()
         if cap is not None: cap.release()
         cv2.destroyAllWindows()
         print('Preview stopped; webcam released.',flush=True)
@@ -92,6 +103,7 @@ if __name__=='__main__':
     p.add_argument('--model',default='models/yolov8n.onnx'); p.add_argument('--camera',type=int,default=0)
     p.add_argument('--confidence',type=float,default=.35); p.add_argument('--hz',type=float,default=10)
     p.add_argument('--seconds',type=float,default=0,help='0 leaves preview open until Q/Esc')
+    p.add_argument('--speak',action='store_true',help='Mac-only local object speech; not integrated navigation guidance')
     args=p.parse_args()
     if not 0<args.confidence<1 or args.hz<=0 or args.seconds<0: p.error('Invalid confidence/rate/duration')
     preview(args)
